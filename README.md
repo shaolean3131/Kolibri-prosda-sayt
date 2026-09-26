@@ -10,8 +10,13 @@ sunucunuzda çalışan PHP sitesi ve yönetim paneli.
 | Admin: giriş / ilk kurulum | hazır |
 | Admin: iskelet (üst bar, yan menü, mobil menü, animasyonlar) | hazır |
 | Admin: Дашборд (grafikler, dönem seçimi, CSV indirme) | hazır |
+| Admin: Каталог → Основное (kategori, ürün, fotoğraf, etiket, sıralama, arama) | hazır |
+| Admin: Клиенты (filtreler, gizli telefon, CSV) | hazır |
+| Admin: Акции и скидки (baner, süre, tür, promosyon kodu, ayarlar) | hazır |
+| Admin: Настройки (Главные, Формы оплаты, Предзаказы, Время работы, Юр. информация, Сниппеты) | hazır |
+| Admin: Точки и зоны доставки (harita) | vitrinle birlikte |
 | Admin: diğer menü bölümleri | ekran görüntüleri bekleniyor |
-| Vitrin (müşteri tarafı) | ekran görüntüleri alındı, sırada |
+| Vitrin (müşteri tarafı) + «ana ekrana ekle» (PWA) | sırada |
 
 ## Gereksinimler
 
@@ -57,7 +62,11 @@ admin/
   assets/            css, js (grafikler), logo
 config/              ayar dosyası
 storage/             SQLite veritabanı
+uploads/             yüklenen fotoğraflar (ürün, kategori, baner)
 ```
+
+Veritabanı tabloları ilk açılışta otomatik oluşur; yeni sürüm yüklendiğinde
+eksik tablo/sütunlar kendiliğinden eklenir (`admin/core/schema.php`).
 
 Yan menü `admin/core/menu.php` dosyasından yönetilir. Yeni bir ekran eklemek
 için `admin/pages/` içine dosya koyup `admin/index.php` içindeki `$views`

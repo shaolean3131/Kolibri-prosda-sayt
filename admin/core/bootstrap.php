@@ -142,7 +142,7 @@ function db(): PDO
         $pdo->exec('PRAGMA foreign_keys = ON');
     }
 
-    migrate($pdo);
+    migrate_if_needed($pdo);
     return $pdo;
 }
 
@@ -219,4 +219,104 @@ function csrf_valid(): bool
 {
     $token = $_POST['_csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     return is_string($token) && hash_equals(csrf_token(), $token);
+}
+
+/* ---------- settings ---------- */
+
+function setting(string $name, ?string $default = null): ?string
+{
+    static $all = null;
+    if ($all === null) {
+        $all = db()->query('SELECT name, value FROM settings')->fetchAll(PDO::FETCH_KEY_PAIR);
+    }
+    return array_key_exists($name, $all) ? $all[$name] : $default;
+}
+
+function save_setting(string $name, ?string $value): void
+{
+    upsert_setting(db(), $name, $value);
+}
+
+/* ---------- api helpers ---------- */
+
+/** For state-changing API endpoints: admin session + POST + CSRF token. */
+function api_guard(): array
+{
+    $admin = require_admin(api: true);
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        json_response(['error' => 'method not allowed'], 405);
+    }
+    if (!csrf_valid()) {
+        json_response(['error' => 'Сессия устарела. Обновите страницу.'], 419);
+    }
+    return $admin;
+}
+
+function input_string(string $key, int $maxLength = 255): string
+{
+    $value = $_POST[$key] ?? '';
+    return is_string($value) ? mb_substr(trim($value), 0, $maxLength) : '';
+}
+
+function input_int(string $key, int $default = 0): int
+{
+    $value = $_POST[$key] ?? null;
+    return is_numeric($value) ? (int) $value : $default;
+}
+
+function input_money(string $key): ?float
+{
+    $value = str_replace([' ', ','], ['', '.'], (string) (is_string($_POST[$key] ?? null) ? $_POST[$key] : ''));
+    return is_numeric($value) ? round(max(0, (float) $value), 2) : null;
+}
+
+/* ---------- uploads ---------- */
+
+/** An error whose message is safe to show to the admin. */
+class UserError extends RuntimeException
+{
+}
+
+/** Public URL of an uploaded file stored as "uploads/...". */
+function upload_url(string $path): string
+{
+    return $path === '' ? '' : rtrim((string) config('site_url', '/'), '/') . '/' . $path;
+}
+
+/**
+ * Saves an uploaded image into uploads/{dir}/ under a random name and
+ * returns its stored path, or throws with a user-facing message.
+ */
+function store_image(array $file, string $dir): string
+{
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        throw new UserError($file['error'] === UPLOAD_ERR_INI_SIZE ? 'Файл слишком большой.' : 'Не удалось загрузить файл.');
+    }
+    if ($file['size'] > 10 * 1024 * 1024) {
+        throw new UserError('Файл больше 10 МБ.');
+    }
+    $types = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+    $info  = @getimagesize($file['tmp_name']);
+    $mime  = $info['mime'] ?? '';
+    if (!isset($types[$mime])) {
+        throw new UserError('Поддерживаются только JPG, PNG и WebP.');
+    }
+
+    $relative = 'uploads/' . $dir;
+    $target   = ROOT_DIR . '/' . $relative;
+    if (!is_dir($target) && !mkdir($target, 0775, true) && !is_dir($target)) {
+        throw new UserError('Нет доступа к папке uploads.');
+    }
+    $name = bin2hex(random_bytes(12)) . '.' . $types[$mime];
+    if (!move_uploaded_file($file['tmp_name'], $target . '/' . $name)) {
+        throw new UserError('Не удалось сохранить файл.');
+    }
+    return $relative . '/' . $name;
+}
+
+function delete_upload(string $path): void
+{
+    if ($path !== '' && str_starts_with($path, 'uploads/') && !str_contains($path, '..')) {
+        @unlink(ROOT_DIR . '/' . $path);
+    }
 }

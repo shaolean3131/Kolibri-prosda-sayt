@@ -8,7 +8,16 @@ require_admin();
 
 // Pages that already have their own screen; the rest show a placeholder.
 $views = [
-    'dashboard' => 'dashboard',
+    'dashboard'  => 'dashboard',
+    'catalog'    => 'catalog',
+    'clients'    => 'clients',
+    'promotions' => 'promotions',
+    'settings'   => 'settings',
+];
+// Page headings that differ from the menu label.
+$titles = [
+    'catalog' => 'Каталог',
+    'clients' => 'Клиенты',
 ];
 
 $page = is_string($_GET['p'] ?? null) ? $_GET['p'] : 'dashboard';
@@ -20,4 +29,9 @@ if ($item === null) {
     exit;
 }
 
-render_page($page, $item['title'], $views[$page] ?? 'placeholder');
+$view = $views[$page] ?? 'placeholder';
+if (is_file(__DIR__ . '/core/' . $view . '.php')) {
+    require __DIR__ . '/core/' . $view . '.php';
+}
+
+render_page($page, $titles[$page] ?? $item['title'], $view);

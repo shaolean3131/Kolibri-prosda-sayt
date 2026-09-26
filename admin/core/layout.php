@@ -131,8 +131,10 @@ function render_page(string $page, string $title, string $view, array $vars = []
 </div>
 <div class="backdrop" data-sidebar-close></div>
 
-<script src="<?= e(asset('js/charts.js')) ?>" defer></script>
+<script src="<?= e(asset('js/ui.js')) ?>" defer></script>
 <script src="<?= e(asset('js/admin.js')) ?>" defer></script>
+<?php if ($view === 'dashboard'): ?><script src="<?= e(asset('js/charts.js')) ?>" defer></script><?php endif; ?>
+<?php if (is_file(ADMIN_DIR . '/assets/js/pages/' . $view . '.js')): ?><script src="<?= e(asset('js/pages/' . $view . '.js')) ?>" defer></script><?php endif; ?>
 </body>
 </html>
     <?php
