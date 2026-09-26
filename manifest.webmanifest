@@ -1,16 +1,35 @@
 {
+    "id": "./",
     "name": "Колибри — студия цветов",
     "short_name": "Колибри",
     "description": "Букеты и композиции с доставкой и самовывозом",
     "lang": "ru",
+    "dir": "ltr",
     "start_url": "./?source=app",
     "scope": "./",
     "display": "standalone",
+    "display_override": ["standalone"],
+    "orientation": "portrait",
     "background_color": "#ffffff",
     "theme_color": "#ffffff",
+    "categories": ["shopping", "lifestyle"],
     "icons": [
-        { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-        { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+        { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
         { "src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+        {
+            "name": "Корзина",
+            "short_name": "Корзина",
+            "url": "./?source=app#cart",
+            "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        },
+        {
+            "name": "Акции",
+            "short_name": "Акции",
+            "url": "./?source=app#promos",
+            "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+        }
     ]
 }

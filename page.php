@@ -19,32 +19,13 @@ $title = $pages[$slug] ?? 'Страница не найдена';
 site_head($title . ' — ' . config('app_name', 'Колибри'));
 ?>
 <div class="page">
-    <?php site_header(); ?>
+    <?php site_header([], true); ?>
     <main class="container">
         <article class="content">
             <h1><?= e($title) ?></h1>
 
-            <?php if ($slug === 'promotions'):
-                $now = date('Y-m-d H:i:s');
-                $stmt = db()->prepare('SELECT * FROM promotions WHERE is_active = 1 AND (ends_at IS NULL OR ends_at >= ?) ORDER BY sort, id DESC');
-                $stmt->execute([$now]);
-                $promos = $stmt->fetchAll(); ?>
-                <?php if (!$promos): ?>
-                    <p class="content__text">Сейчас акций нет — загляните позже 🌸</p>
-                <?php endif; ?>
-                <div class="promo-cards">
-                    <?php foreach ($promos as $n => $promo):
-                        $banner = $promo['banner_desktop'] ?: ($promo['banner_mobile'] ?: $promo['banner_app']); ?>
-                        <section class="promo-card" id="promo-<?= (int) $promo['id'] ?>" style="animation-delay: <?= $n * 0.08 ?>s">
-                            <?php if ($banner): ?><img src="<?= e(upload_url($banner)) ?>" alt="" loading="lazy"><?php endif; ?>
-                            <div class="promo-card__body">
-                                <h2><?= e($promo['name']) ?></h2>
-                                <?php if ((string) $promo['description'] !== ''): ?><p><?= e($promo['description']) ?></p><?php endif; ?>
-                                <div class="promo-card__meta"><?= e(promo_period_label($promo) === 'Бессрочный' ? 'Бессрочная акция' : 'Срок: ' . promo_period_label($promo)) ?></div>
-                            </div>
-                        </section>
-                    <?php endforeach; ?>
-                </div>
+            <?php if ($slug === 'promotions'): ?>
+                <?= site_promotions_html() ?>
 
             <?php elseif ($slug === 'privacy' || $slug === 'terms'):
                 $text = trim((string) setting($slug === 'privacy' ? 'legal_privacy' : 'legal_terms', '')); ?>

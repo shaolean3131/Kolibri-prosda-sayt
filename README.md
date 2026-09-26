@@ -53,11 +53,25 @@ o durumda hosting desteğine sorun).
 
 ## Uygulama (ana ekrana ekle)
 
-Site HTTPS üzerinde çalıştığında telefonda «ana ekrana ekle» ile uygulama gibi
-açılır. Android/Chrome'da alttaki «Скачивай наше приложение» kartında
-«Установить» butonu çıkar; iPhone'da kart «Поделиться → На экран Домой»
-adımlarını gösterir. Uygulamadan gelen siparişler panelde «Приложение»
-olarak işaretlenir.
+Site HTTPS üzerinde çalıştığında telefonda ana ekrana eklenip gerçek bir
+uygulama gibi açılır:
+
+- adres çubuğu yok, kendi ikonu ve açılış ekranı var (iPhone'un 11 ekran
+  boyutu için ayrı açılış görseli: `assets/splash/`);
+- altta sekme çubuğu: Каталог · Поиск · Акции · Корзина · Контакты
+  (sepette ürün sayısı rozeti);
+- Android'in «geri» tuşu/hareketi siteden çıkmaz, açık pencereyi kapatır;
+- aşağı çekince yenilenir (kolibri animasyonu), zoom/metin seçme yok,
+  iPhone'da forma dokununca ekran büyümez;
+- internet yokken de açılır (son görülen katalog), bağlantı yoksa uyarı çıkar;
+- simgeye uzun basınca kısayollar: «Корзина», «Акции».
+
+Kurulum: Android/Chrome'da alttaki kartta «Установить»; iPhone'da kart
+«Как?» ile adım adım talimat açar (Поделиться → На экран «Домой»).
+Uygulamadan gelen siparişler panelde «Приложение» olarak işaretlenir.
+
+İkon ve açılış görselleri `assets/icons/` ve `assets/splash/` içinde;
+logonuz değişirse bunlar yeniden üretilmelidir.
 
 ## Saat dilimi
 

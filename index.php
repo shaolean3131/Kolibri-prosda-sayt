@@ -70,6 +70,15 @@ $config = [
 
 site_head(config('app_name', 'Колибри') . ' — студия цветов');
 ?>
+<div class="splash" data-splash aria-hidden="true">
+    <div class="splash__inner">
+        <img class="splash__icon" src="assets/icons/icon-512.png" alt="">
+        <div class="splash__name"><b>КОЛИБРИ</b><small>студия цветов</small></div>
+    </div>
+</div>
+<div class="ptr" data-ptr aria-hidden="true"><?= bird_svg('ptr__bird') ?></div>
+<div class="offline" data-offline hidden>Нет подключения к интернету</div>
+
 <div class="page" data-page>
     <?php site_header($categories); ?>
 
@@ -370,6 +379,43 @@ site_head(config('app_name', 'Колибри') . ' — студия цветов
     <button class="install__btn" type="button" data-install-go>Установить</button>
     <button class="install__close" type="button" data-install-close aria-label="Закрыть"><?= site_icon('close') ?></button>
 </div>
+
+<!-- promotions (app tab) -->
+<div class="smodal" data-smodal="promos" aria-hidden="true">
+    <div class="smodal__backdrop" data-close></div>
+    <div class="smodal__dialog smodal__dialog--sheet" role="dialog" aria-label="Акции">
+        <button class="round-btn smodal__close" type="button" data-close aria-label="Закрыть"><?= site_icon('close') ?></button>
+        <h2 class="smodal__title">Акции</h2>
+        <?= site_promotions_html() ?>
+    </div>
+</div>
+
+<!-- how to install on iPhone -->
+<div class="smodal" data-smodal="howto" aria-hidden="true">
+    <div class="smodal__backdrop" data-close></div>
+    <div class="smodal__dialog smodal__dialog--sm howto" role="dialog" aria-label="Как установить приложение">
+        <button class="round-btn smodal__close" type="button" data-close aria-label="Закрыть"><?= site_icon('close') ?></button>
+        <img class="howto__icon" src="assets/icons/icon-512.png" alt="">
+        <h2 class="smodal__title">Приложение «<?= e(config('app_name', 'Колибри')) ?>»</h2>
+        <p class="howto__lead">Установите на экран «Домой» — откроется как обычное приложение, без адресной строки.</p>
+        <ol class="howto__steps">
+            <li><span class="howto__n">1</span><span>Нажмите <b>«Поделиться»</b> <?= site_icon('share') ?> внизу экрана</span></li>
+            <li><span class="howto__n">2</span><span>Выберите <b>«На экран „Домой“»</b> <?= site_icon('add') ?></span></li>
+            <li><span class="howto__n">3</span><span>Нажмите <b>«Добавить»</b> — готово!</span></li>
+        </ol>
+        <p class="howto__note">Не видите этого пункта? Откройте сайт в Safari.</p>
+        <div class="howto__arrow" aria-hidden="true"><?= site_icon('up') ?></div>
+    </div>
+</div>
+
+<!-- bottom tabs (installed app) -->
+<nav class="tabbar" data-tabbar aria-label="Разделы">
+    <button class="tab is-active" type="button" data-tab="home"><?= site_icon('flower') ?><span>Каталог</span></button>
+    <button class="tab" type="button" data-tab="search"><?= site_icon('search') ?><span>Поиск</span></button>
+    <button class="tab" type="button" data-tab="promos"><?= site_icon('percent') ?><span>Акции</span></button>
+    <button class="tab" type="button" data-tab="cart"><?= site_icon('basket') ?><span>Корзина</span><b class="tab__badge" data-tab-badge hidden></b></button>
+    <button class="tab" type="button" data-tab="contacts"><?= site_icon('phone') ?><span>Контакты</span></button>
+</nav>
 
 <button class="to-top" type="button" data-to-top aria-label="Наверх"><?= site_icon('up') ?></button>
 <button class="cart-bar" type="button" data-cart-open data-cart-bar hidden><?= site_icon('basket') ?><span>Корзина</span><b data-cart-total>0 ₽</b></button>

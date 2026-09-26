@@ -1,15 +1,18 @@
 /*
- * Service worker: makes the site installable and keeps it usable on a
- * flaky connection. Pages are network-first (fresh prices and stock),
- * static files are served from cache and refreshed in the background.
- * The admin panel and the API are never cached.
+ * Service worker: makes the site an installable app that opens instantly
+ * and keeps working on a weak connection.
+ * - pages: network first, but after 3.5 s the saved copy is shown;
+ * - site files and photos: served from the cache, refreshed in the background;
+ * - Google fonts: cached for good;
+ * - the admin panel and the API are never cached.
  */
-var CACHE = 'kolibri-v1';
+var CACHE = 'kolibri-v2';
 var OFFLINE = 'offline.html';
+var SHELL = ['./', OFFLINE, 'manifest.webmanifest', 'assets/icons/icon-192.png', 'admin/assets/img/kolibri-mark.svg'];
 
 self.addEventListener('install', function (event) {
     event.waitUntil(caches.open(CACHE).then(function (cache) {
-        return cache.addAll([OFFLINE, 'assets/icons/icon-192.png', 'admin/assets/img/kolibri-mark.svg']);
+        return cache.addAll(SHELL).catch(function () { /* first visit offline: skip */ });
     }));
     self.skipWaiting();
 });
@@ -20,32 +23,63 @@ self.addEventListener('activate', function (event) {
     }).then(function () { return self.clients.claim(); }));
 });
 
+function timeout(ms, promise) {
+    return new Promise(function (resolve, reject) {
+        var timer = setTimeout(function () { reject(new Error('timeout')); }, ms);
+        promise.then(function (res) { clearTimeout(timer); resolve(res); }, function (err) { clearTimeout(timer); reject(err); });
+    });
+}
+
 self.addEventListener('fetch', function (event) {
     var req = event.request;
-    var url = new URL(req.url);
-    if (req.method !== 'GET' || url.origin !== location.origin || /\/(admin|api)\//.test(url.pathname)) {
+    if (req.method !== 'GET') {
         return;
     }
+    var url = new URL(req.url);
 
-    if (req.mode === 'navigate') {
-        event.respondWith(fetch(req).then(function (res) {
-            var copy = res.clone();
-            caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
-            return res;
-        }).catch(function () {
-            return caches.match(req).then(function (hit) { return hit || caches.match(OFFLINE); });
+    if (/^fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) {
+        event.respondWith(caches.open(CACHE).then(function (cache) {
+            return cache.match(req).then(function (hit) {
+                return hit || fetch(req).then(function (res) {
+                    if (res.ok || res.type === 'opaque') { cache.put(req, res.clone()); }
+                    return res;
+                });
+            });
         }));
         return;
     }
 
-    if (/\/(assets|uploads)\//.test(url.pathname)) {
+    if (url.origin !== location.origin || /\/(admin|api)\//.test(url.pathname)) {
+        return;
+    }
+
+    if (req.mode === 'navigate') {
+        var network = fetch(req).then(function (res) {
+            if (res.ok) {
+                var copy = res.clone();
+                caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
+            }
+            return res;
+        });
+        event.respondWith(timeout(3500, network).catch(function () {
+            return caches.match(req, { ignoreSearch: true }).then(function (hit) {
+                return hit || network.catch(function () { return caches.match(OFFLINE); });
+            });
+        }));
+        return;
+    }
+
+    if (/\/(assets|uploads)\//.test(url.pathname) || url.pathname.endsWith('.webmanifest')) {
         event.respondWith(caches.open(CACHE).then(function (cache) {
             return cache.match(req).then(function (hit) {
-                var network = fetch(req).then(function (res) {
+                var fresh = fetch(req).then(function (res) {
                     if (res.ok) { cache.put(req, res.clone()); }
                     return res;
-                }).catch(function () { return hit; });
-                return hit || network;
+                }).catch(function () {
+                    // an older version of the same file is better than nothing
+                    return hit || cache.match(req, { ignoreSearch: true });
+                });
+                return hit || fresh;
             });
         }));
     }

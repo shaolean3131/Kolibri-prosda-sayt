@@ -1,6 +1,12 @@
 <?php
 defined('KOLIBRI') or exit;
 
+/** iPhone screens (CSS width, height, pixel ratio) that get a launch image. */
+const IOS_SPLASH = [
+    [440, 956, 3], [402, 874, 3], [430, 932, 3], [393, 852, 3], [428, 926, 3], [390, 844, 3],
+    [375, 812, 3], [414, 896, 3], [414, 896, 2], [414, 736, 3], [375, 667, 2],
+];
+
 /** Line-art hummingbird (the brand mark). */
 function bird_svg(string $class = ''): string
 {
@@ -43,6 +49,9 @@ function site_icon(string $name): string
         'clock'   => '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
         'check'   => '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
         'share'   => '<path d="M12 15V3.5M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/>',
+        'flower'  => '<path d="M12 13.2c-3.2 0-5-2.4-5-5.6V3.8l2.6 2.1L12 3l2.4 2.9L17 3.8v3.8c0 3.2-1.8 5.6-5 5.6zM12 13.2V21M12 18.2c-1.9-2.2-4.5-2.6-6-1.7M12 19.6c1.6-1.9 3.8-2.2 5.3-1.5"/>',
+        'percent' => '<path d="M20 12.5 12.5 20a2 2 0 0 1-2.8 0L4 14.3a2 2 0 0 1 0-2.8L11.5 4H18a2 2 0 0 1 2 2z"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor"/>',
+        'add'     => '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>',
     ];
     return '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . ($icons[$name] ?? '') . '</svg>';
 }
@@ -60,13 +69,31 @@ function site_head(string $title, string $description = ''): void
     <meta name="description" content="<?= e($description ?: $name . ' — студия цветов. Букеты и композиции с доставкой и самовывозом.') ?>">
     <meta name="theme-color" content="#ffffff">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
-    <script>document.documentElement.classList.add('js');</script>
+    <script>
+        // before first paint: mark JS, and the installed-app mode (home screen)
+        (function (d) {
+            var c = d.documentElement.classList;
+            c.add('js');
+            var app = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || /[?&]source=app/.test(location.search);
+            if (app) {
+                c.add('app');
+                try { if (!sessionStorage.getItem('kolibri.launched')) { c.add('app-launch'); } } catch (e) {}
+            }
+        })(document);
+    </script>
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="<?= e($name) ?>">
+    <meta name="application-name" content="<?= e($name) ?>">
+    <meta name="format-detection" content="telephone=no">
     <meta property="og:title" content="<?= e($title) ?>">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="admin/assets/img/kolibri-mark.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    <?php foreach (IOS_SPLASH as [$w, $h, $dpr]): ?>
+    <link rel="apple-touch-startup-image" href="assets/splash/splash-<?= $w * $dpr ?>x<?= $h * $dpr ?>.png" media="(device-width: <?= $w ?>px) and (device-height: <?= $h ?>px) and (-webkit-device-pixel-ratio: <?= $dpr ?>) and (orientation: portrait)">
+    <?php endforeach; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Unbounded:wght@700;800&display=swap">
@@ -83,13 +110,19 @@ function site_asset(string $path): string
     return 'assets/' . $path . '?v=' . (is_file($file) ? filemtime($file) : 0);
 }
 
-/** Header. $catsNav: category chips shown in the sticky header on scroll. */
-function site_header(array $categories = []): void
+/**
+ * Header. $categories: chips shown in the sticky header on scroll;
+ * $back: content pages get a back arrow in the installed app.
+ */
+function site_header(array $categories = [], bool $back = false): void
 {
     ?>
 <header class="hdr" data-hdr>
     <div class="hdr__main container">
         <div class="hdr__side">
+            <?php if ($back): ?>
+                <a class="hbtn hbtn--icon app-back" href="./" aria-label="Назад"><span class="flip"><?= site_icon('chevron') ?></span></a>
+            <?php endif; ?>
             <div class="dd-wrap" data-dd>
                 <button class="hbtn hbtn--icon" type="button" data-dd-toggle aria-label="Меню"><?= site_icon('grid') ?></button>
                 <div class="dd">
@@ -183,4 +216,27 @@ function site_contacts_modal(array $points): void
     </div>
 </div>
     <?php
+}
+
+/** Active promotions as cards (Акции page and the app's promotions sheet). */
+function site_promotions_html(): string
+{
+    $stmt = db()->prepare('SELECT * FROM promotions WHERE is_active = 1 AND (ends_at IS NULL OR ends_at >= ?) ORDER BY sort, id DESC');
+    $stmt->execute([date('Y-m-d H:i:s')]);
+    $promos = $stmt->fetchAll();
+    if (!$promos) {
+        return '<p class="content__text">Сейчас акций нет — загляните позже 🌸</p>';
+    }
+    $html = '<div class="promo-cards">';
+    foreach ($promos as $n => $promo) {
+        $banner = $promo['banner_mobile'] ?: ($promo['banner_desktop'] ?: $promo['banner_app']);
+        $period = promo_period_label($promo);
+        $html .= '<section class="promo-card" id="promo-' . (int) $promo['id'] . '" style="animation-delay: ' . ($n * 0.08) . 's">'
+            . ($banner ? '<img src="' . e(upload_url($banner)) . '" alt="" loading="lazy">' : '')
+            . '<div class="promo-card__body"><h2>' . e($promo['name']) . '</h2>'
+            . ((string) $promo['description'] !== '' ? '<p>' . e($promo['description']) . '</p>' : '')
+            . '<div class="promo-card__meta">' . e($period === 'Бессрочный' ? 'Бессрочная акция' : 'Срок: ' . $period) . '</div>'
+            . '</div></section>';
+    }
+    return $html . '</div>';
 }

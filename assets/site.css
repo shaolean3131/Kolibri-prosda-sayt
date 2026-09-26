@@ -656,6 +656,180 @@ body.cart-open .cart__panel { transform: none; }
 .promo-card__body p { margin: 0; color: #6e6e73; line-height: 1.5; white-space: pre-line; }
 .promo-card__meta { margin-top: 12px; font-size: 14px; color: var(--muted); }
 
+
+/* ==========================================================================
+   Installed app (home screen): feels native, not like a web page
+   ========================================================================== */
+
+button, a, .pcard, .chip, .seg, .stepper { touch-action: manipulation; }
+img { -webkit-user-drag: none; }
+
+html.app { overscroll-behavior-y: none; }
+html.app body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior-y: none; }
+html.app input, html.app textarea, html.app select { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+
+/* the header becomes a clean title bar; tabs take over navigation */
+.app-back { display: none; }
+html.app .app-back { display: inline-flex; }
+html.app .hdr__side > :not(.app-back) { display: none; }
+html.app .hdr__cats .cart-btn { display: none; }
+html.app .cart-bar, html.app .to-top, html.app .install { display: none !important; }
+html.app .page { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+html.app .ftr { padding-bottom: 28px; }
+
+.tabbar { display: none; }
+html.app .tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 95;
+    display: flex;
+    padding: 5px 4px calc(4px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, .88);
+    backdrop-filter: blur(22px) saturate(1.8);
+    -webkit-backdrop-filter: blur(22px) saturate(1.8);
+    box-shadow: 0 -.5px 0 rgba(0, 0, 0, .14);
+}
+.tab {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 0 3px;
+    border: 0;
+    background: none;
+    color: #a1a1a6;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .01em;
+    transition: color .25s var(--ease);
+}
+.tab .i { width: 26px; height: 26px; stroke-width: 1.7; transition: transform .35s var(--spring), stroke-width .2s; }
+.tab.is-active { color: var(--text); }
+.tab.is-active .i { stroke-width: 2.1; }
+.tab:active .i { transform: scale(.84); }
+.tab.pop .i { animation: tab-pop .45s var(--spring); }
+.tab__badge {
+    position: absolute;
+    top: 1px;
+    left: calc(50% + 5px);
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    box-shadow: 0 0 0 2px #fff;
+}
+.tab__badge.bump { animation: bump .5s var(--spring); }
+
+/* windows and sheets end above the tab bar, which stays tappable */
+html.app .smodal { bottom: calc(62px + env(safe-area-inset-bottom)); z-index: 94; }
+html.app .smodal__dialog { max-height: 94%; }
+
+/* the cart sits above the tab bar, like a tab screen */
+@media (max-width: 1279px) {
+    html.app .cart { z-index: 94; }
+    html.app .cart__panel { bottom: calc(62px + env(safe-area-inset-bottom)); border-radius: 0; box-shadow: none; }
+    html.app .cart__foot { padding-bottom: 14px; }
+}
+
+/* sheets opened from tabs */
+.smodal__dialog--sheet { width: min(720px, 100%); padding: 32px; overflow-y: auto; }
+.smodal__dialog--sheet .promo-card { animation-name: fade-up; }
+
+/* launch screen (matches the iPhone launch image, then lets go) */
+.splash { display: none; }
+html.app-launch .splash {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    transition: opacity .45s var(--ease) .12s;
+    animation: splash-safety 0s linear 4s forwards;
+}
+.splash__inner { display: flex; flex-direction: column; align-items: center; gap: 18px; transition: transform .6s var(--ease), opacity .45s var(--ease); }
+.splash__icon { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 12px 30px rgba(12, 39, 72, .22); }
+.splash__name { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.splash__name b { font-size: 24px; font-weight: 800; letter-spacing: .06em; background: linear-gradient(90deg, #7b2fd0, #b24fe2); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.splash__name small { margin-top: 6px; font-size: 10px; font-weight: 800; letter-spacing: .34em; text-transform: uppercase; color: #8e8e93; }
+.splash.is-hiding { opacity: 0; }
+.splash.is-hiding .splash__inner { transform: scale(1.14) translateY(-8px); opacity: 0; }
+html.app-launch .page { animation: app-enter .6s var(--ease) .35s both; }
+
+/* pull to refresh */
+.ptr {
+    position: fixed;
+    top: calc(var(--hdr-h) - 46px);
+    left: 50%;
+    z-index: 35;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin-left: -23px;
+    border-radius: 50%;
+    background: #fff;
+    color: #1f3561;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .14);
+    opacity: 0;
+    transform: translateY(var(--pull, 0px));
+    transition: transform .35s var(--spring), opacity .25s, color .2s;
+    pointer-events: none;
+}
+.ptr.is-dragging { transition: none; }
+.ptr__bird { width: 30px; height: 26px; transform: rotate(var(--turn, 0deg)); }
+.ptr.is-ready { color: var(--purple); }
+.ptr.is-loading .ptr__bird { transform: none; animation: bird-float .8s ease-in-out infinite; }
+.ptr.is-loading .bird__wing { transform-origin: 42% 52%; animation: wing .35s ease-in-out infinite; }
+
+/* offline pill */
+.offline {
+    position: fixed;
+    top: calc(var(--hdr-h) + 6px);
+    left: 50%;
+    z-index: 60;
+    padding: 9px 16px;
+    border-radius: 99px;
+    background: #1c1c1e;
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 500;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .2);
+    transform: translateX(-50%);
+    white-space: nowrap;
+    animation: offline-in .45s var(--spring) both;
+}
+
+/* how to install on iPhone */
+.howto { text-align: center; }
+.howto__icon { width: 76px; height: 76px; margin: 4px auto 14px; border-radius: 18px; box-shadow: 0 10px 24px rgba(12, 39, 72, .2); }
+.howto .smodal__title { margin-bottom: 8px; font-size: 23px; }
+.howto__lead { margin: 0 0 20px; color: #6e6e73; line-height: 1.45; }
+.howto__steps { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; text-align: left; }
+.howto__steps li { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--soft); font-size: 15.5px; animation: fade-up .45s var(--ease) both; }
+.howto__steps li:nth-child(2) { animation-delay: .08s; }
+.howto__steps li:nth-child(3) { animation-delay: .16s; }
+.howto__steps .i { display: inline-block; width: 20px; height: 20px; margin: 0 2px; vertical-align: -4px; color: #007aff; }
+.howto__n { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; background: #1c1c1e; color: #fff; font-size: 14px; font-weight: 700; }
+.howto__note { margin: 16px 0 0; font-size: 13px; color: var(--muted); }
+.howto__arrow { display: none; }
+
+@keyframes tab-pop { 0% { transform: scale(1); } 40% { transform: scale(.8); } 100% { transform: scale(1); } }
+@keyframes splash-safety { to { visibility: hidden; opacity: 0; } }
+@keyframes app-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes offline-in { from { opacity: 0; transform: translate(-50%, -12px); } to { opacity: 1; transform: translateX(-50%); } }
+@keyframes arrow-bob { 0%, 100% { transform: rotate(180deg) translateY(0); } 50% { transform: rotate(180deg) translateY(-8px); } }
+
 /* ---------- keyframes ---------- */
 
 @keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
@@ -743,6 +917,10 @@ body.cart-open .cart__panel { transform: none; }
     .stepper--sm .stepper__btn { width: 30px; height: 30px; }
     .plabel { font-size: 11px; padding: 3px 7px; }
 
+    .field input, .field select, .field textarea, .promo__input, .search-box__field input { font-size: 16px; }
+    .smodal__dialog--sheet { padding: 26px 16px calc(24px + env(safe-area-inset-bottom)); max-height: 88vh; }
+    .howto__arrow { display: block; position: fixed; left: 50%; bottom: 6px; width: 30px; height: 30px; margin-left: -15px; color: #007aff; animation: arrow-bob 1.2s ease-in-out infinite; }
+    .howto__arrow .i { width: 30px; height: 30px; }
     .smodal { align-items: end; padding: 0; }
     .smodal__dialog { width: 100%; max-height: 94vh; border-radius: 26px 26px 0 0; transform: translateY(100%); transition: transform .5s var(--ease), opacity .2s; }
     .smodal__dialog--sm { padding: 26px 20px calc(24px + env(safe-area-inset-bottom)); }

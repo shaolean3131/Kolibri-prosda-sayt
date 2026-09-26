@@ -130,37 +130,122 @@
     }
 
     /* ======================================================================
-       Modals, dropdown
+       Layers: windows and the cart. Every open layer adds a history entry,
+       so the phone's Back button / gesture closes it instead of leaving
+       the site — like in a real app.
        ====================================================================== */
 
-    var openStack = [];
+    var cart = $('[data-cart]');
+    var themeMeta = $('meta[name="theme-color"]');
+    var layers = [];
+    var collapsing = null;
 
-    function openModal(name) {
+    if (history.state && history.state.kolibri) {
+        history.replaceState(null, '');
+    }
+
+    function syncChrome() {
+        var modalOpen = layers.some(function (l) { return l !== cart; });
+        var cartOverlay = layers.indexOf(cart) !== -1 && !desktop.matches;
+        document.body.classList.toggle('lock', modalOpen || cartOverlay);
+        // status bar follows the dimmed backdrop, as native sheets do
+        if (themeMeta) { themeMeta.setAttribute('content', modalOpen ? '#6e6e71' : '#ffffff'); }
+        syncTabs();
+    }
+
+    function pushLayer(el) {
+        layers.push(el);
+        try { history.pushState({ kolibri: layers.length }, ''); } catch (e) { /* ignore */ }
+        syncChrome();
+    }
+
+    function hideLayer(el) {
+        if (el === cart) {
+            hideCart();
+            return;
+        }
+        el.classList.remove('is-open');
+        el.setAttribute('aria-hidden', 'true');
+        var dialog = $('.smodal__dialog', el);
+        if (dialog) {
+            dialog.style.transform = '';
+            dialog.style.transition = '';
+        }
+    }
+
+    /** Closes one layer the way the Back button would. */
+    function closeLayer(el) {
+        var i = layers.indexOf(el);
+        if (i === -1) { return; }
+        if (i === layers.length - 1 && history.state && history.state.kolibri === layers.length) {
+            history.back(); // popstate hides it
+            return;
+        }
+        layers.splice(i, 1);
+        hideLayer(el);
+        syncChrome();
+    }
+
+    /** Closes every layer at once, then runs `then` (e.g. opens another tab). */
+    function closeAll(then) {
+        if (!layers.length) {
+            if (then) { then(); }
+            return;
+        }
+        var depth = history.state && history.state.kolibri ? history.state.kolibri : 0;
+        layers.slice().reverse().forEach(hideLayer);
+        layers = [];
+        syncChrome();
+        if (depth > 0) {
+            collapsing = then || true;
+            history.go(-depth);
+        } else if (then) {
+            then();
+        }
+    }
+
+    window.addEventListener('popstate', function () {
+        if (collapsing) {
+            var next = collapsing;
+            collapsing = null;
+            if (typeof next === 'function') { next(); }
+            return;
+        }
+        var el = layers.pop();
+        if (el) {
+            hideLayer(el);
+            syncChrome();
+        }
+    });
+
+    /** Opens a window; with {replace: true} it takes the place of the top one. */
+    function openModal(name, opts) {
         var el = $('[data-smodal="' + name + '"]');
         if (!el) { return null; }
+        if (el.classList.contains('is-open')) { return el; }
         el.classList.add('is-open');
         el.setAttribute('aria-hidden', 'false');
-        openStack.push(el);
-        document.body.classList.add('lock');
+        if (opts && opts.replace && layers.length) {
+            hideLayer(layers.pop());
+            layers.push(el);
+            try { history.replaceState({ kolibri: layers.length }, ''); } catch (e) { /* ignore */ }
+            syncChrome();
+        } else {
+            pushLayer(el);
+        }
         return el;
     }
 
-    function closeModal(el) {
-        if (!el || !el.classList.contains('is-open')) { return; }
-        el.classList.remove('is-open');
-        el.setAttribute('aria-hidden', 'true');
-        openStack = openStack.filter(function (m) { return m !== el; });
-        var dialog = $('.smodal__dialog', el);
-        if (dialog) { dialog.style.transform = ''; }
-        if (!openStack.length && !(document.body.classList.contains('cart-open') && !desktop.matches)) {
-            document.body.classList.remove('lock');
+    function haptic() {
+        if (navigator.vibrate) {
+            try { navigator.vibrate(8); } catch (e) { /* not allowed */ }
         }
     }
 
     document.addEventListener('click', function (e) {
         var closer = e.target.closest('[data-close]');
         if (closer) {
-            closeModal(closer.closest('.smodal'));
+            closeLayer(closer.closest('.smodal'));
             return;
         }
         var opener = e.target.closest('[data-open]');
@@ -190,10 +275,8 @@
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') { return; }
         closeDropdowns();
-        if (openStack.length) {
-            closeModal(openStack[openStack.length - 1]);
-        } else if (document.body.classList.contains('cart-open')) {
-            closeCart();
+        if (layers.length) {
+            closeLayer(layers[layers.length - 1]);
         }
     });
 
@@ -413,7 +496,7 @@
             }
             save();
             $$('[data-place-label]').forEach(function (el) { el.textContent = placeLabel(); });
-            closeModal(modal);
+            closeLayer(modal);
         });
     }
 
@@ -434,7 +517,7 @@
     var pmQty = 1;
     var pmId = null;
 
-    function openProduct(id) {
+    function openProduct(id, opts) {
         var p = P[id];
         if (!p) { return; }
         pmId = id;
@@ -455,7 +538,7 @@
         $('[data-pm-desc]', pm).innerHTML = desc;
         $('[data-pm-desc]', pm).scrollTop = 0;
         updatePm();
-        openModal('product');
+        openModal('product', opts);
     }
 
     function updatePm(direction) {
@@ -485,8 +568,9 @@
         var img = $('[data-pm-img] img', pm) || $('[data-pm-img]', pm);
         var wasEmpty = !state.items.length;
         fly(img);
+        haptic();
         setQty(pmId, pmQty);
-        closeModal(pm);
+        closeLayer(pm);
         if (desktop.matches && wasEmpty) {
             setTimeout(function () { openCart('cart'); }, 450);
         }
@@ -512,7 +596,7 @@
             if (startY === null) { return; }
             dialog.style.transition = '';
             if (dy > 110) {
-                closeModal(pm);
+                closeLayer(pm);
             } else {
                 dialog.style.transform = '';
             }
@@ -534,6 +618,7 @@
             setQty(id, next);
             var val = $('[data-qty]', card);
             restart(val, dir > 0 ? 'tick-up' : 'tick-down');
+            haptic();
             if (dir > 0) { bump(); }
             return;
         }
@@ -549,6 +634,8 @@
     /* ---------- "fly to cart" ---------- */
 
     function cartTarget() {
+        var tab = $('.tab[data-tab="cart"]');
+        if (tab && tab.getBoundingClientRect().width > 0) { return tab; }
         var candidates = $$('[data-cart-open]').filter(function (el) {
             var r = el.getBoundingClientRect();
             return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden' && !el.closest('[aria-hidden="true"]');
@@ -603,6 +690,13 @@
         $$('.cart-btn').forEach(function (b) { b.classList.toggle('has-items', t.count > 0); });
         var bar = $('[data-cart-bar]');
         if (bar) { bar.hidden = t.count === 0; }
+        var badge = $('[data-tab-badge]');
+        if (badge) {
+            var before = +badge.textContent || 0;
+            badge.hidden = t.count === 0;
+            badge.textContent = t.count;
+            if (t.count > before) { restart(badge, 'bump'); }
+        }
 
         $$('.pcard').forEach(function (card) {
             var id = +card.getAttribute('data-pid');
@@ -798,8 +892,6 @@
        Cart panel & views
        ====================================================================== */
 
-    var cart = $('[data-cart]');
-
     function showView(name) {
         var order = ['cart', 'checkout', 'done'];
         $$('.cart__view', cart).forEach(function (v) {
@@ -811,20 +903,25 @@
 
     function openCart(view) {
         showView(view || 'cart');
-        document.body.classList.add('cart-open');
-        cart.setAttribute('aria-hidden', 'false');
-        if (!desktop.matches) { document.body.classList.add('lock'); }
+        if (layers.indexOf(cart) === -1) {
+            document.body.classList.add('cart-open');
+            cart.setAttribute('aria-hidden', 'false');
+            pushLayer(cart);
+        }
         render();
         reprice();
     }
 
-    function closeCart() {
+    function hideCart() {
         document.body.classList.remove('cart-open');
         cart.setAttribute('aria-hidden', 'true');
-        if (!openStack.length) { document.body.classList.remove('lock'); }
         if ($('[data-view="done"]', cart).classList.contains('is-active')) {
             setTimeout(function () { showView('cart'); }, 500);
         }
+    }
+
+    function closeCart() {
+        closeLayer(cart);
     }
 
     document.addEventListener('click', function (e) {
@@ -850,11 +947,9 @@
         }
     });
 
-    desktop.addEventListener && desktop.addEventListener('change', function () {
-        if (desktop.matches) {
-            document.body.classList.remove('lock');
-        }
-    });
+    if (desktop.addEventListener) {
+        desktop.addEventListener('change', syncChrome);
+    }
 
     /* ======================================================================
        Checkout
@@ -1014,6 +1109,11 @@
         e.preventDefault();
         var err = $('[data-checkout-error]');
         err.textContent = '';
+        if (navigator.onLine === false) {
+            err.textContent = 'Нет подключения к интернету. Заказ отправится, когда связь появится — попробуйте ещё раз.';
+            restart(err, 'shake');
+            return;
+        }
         if (!form.elements.name.value.trim()) { invalid(form.elements.name); return; }
         if (phoneDigits().length !== 11) { invalid(phoneInput); return; }
         if (state.mode === 'pickup' && !state.point) { openWhere(); return; }
@@ -1132,8 +1232,7 @@
     results.addEventListener('click', function (e) {
         var r = e.target.closest('[data-sr]');
         if (!r) { return; }
-        closeModal($('[data-smodal="search"]'));
-        openProduct(+r.getAttribute('data-sr'));
+        openProduct(+r.getAttribute('data-sr'), { replace: true });
     });
 
     /* ======================================================================
@@ -1168,8 +1267,8 @@
 
     var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
     if (ios && mayShow) {
-        $('[data-install-text]').innerHTML = 'Нажмите «Поделиться» ' + '<svg class="i" style="width:16px;height:16px;display:inline;vertical-align:-3px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M8 7.5l4-4 4 4M6 11H5v9.5h14V11h-1"/></svg> и «На экран Домой».';
-        $('[data-install-go]').textContent = 'Понятно';
+        $('[data-install-text]').textContent = 'Установите на iPhone — это займёт 10 секунд.';
+        $('[data-install-go]').textContent = 'Как?';
         setTimeout(showInstall, 5000);
     }
 
@@ -1177,14 +1276,129 @@
         if (deferred) {
             deferred.prompt();
             deferred.userChoice.then(function () { deferred = null; });
+        } else if (ios) {
+            openModal('howto');
         }
         store.set('installDismissed', Date.now());
         hideInstall();
+    });
+    window.addEventListener('appinstalled', function () {
+        store.set('installDismissed', Date.now());
+        if (!install.hidden) { hideInstall(); }
     });
     $('[data-install-close]').addEventListener('click', function () {
         store.set('installDismissed', Date.now());
         hideInstall();
     });
+
+    /* ======================================================================
+       Installed app: bottom tabs, launch screen, pull to refresh, offline
+       ====================================================================== */
+
+    var html = document.documentElement;
+    var tabbar = $('[data-tabbar]');
+    var tabOf = { search: 'search', promos: 'promos', contacts: 'contacts' };
+
+    function syncTabs() {
+        if (!tabbar) { return; }
+        var top = layers[layers.length - 1];
+        var name = !top ? 'home' : top === cart ? 'cart' : tabOf[top.getAttribute('data-smodal')];
+        if (!name) { return; } // product / address windows keep the current tab
+        $$('.tab', tabbar).forEach(function (t) { t.classList.toggle('is-active', t.getAttribute('data-tab') === name); });
+    }
+
+    if (tabbar) {
+        tabbar.addEventListener('click', function (e) {
+            var tab = e.target.closest('[data-tab]');
+            if (!tab) { return; }
+            var name = tab.getAttribute('data-tab');
+            var top = layers[layers.length - 1];
+            restart(tab, 'pop');
+            haptic();
+            if (name === 'home') {
+                if (layers.length) {
+                    closeAll();
+                } else {
+                    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+                }
+                return;
+            }
+            // tapping the tab that is already open closes it
+            if ((name === 'cart' && top === cart) || (top && top !== cart && top.getAttribute('data-smodal') === name)) {
+                closeLayer(top);
+                return;
+            }
+            closeAll(function () {
+                if (name === 'cart') { openCart('cart'); }
+                else if (name === 'search') { openSearch(); }
+                else { openModal(name); }
+            });
+        });
+    }
+
+    // launch screen: continues the phone's splash, then gently lets go
+    if (html.classList.contains('app-launch')) {
+        try { sessionStorage.setItem('kolibri.launched', '1'); } catch (e) { /* ignore */ }
+        var splash = $('[data-splash]');
+        var hidden = false;
+        var hideSplash = function () {
+            if (hidden) { return; }
+            hidden = true;
+            splash.classList.add('is-hiding');
+            setTimeout(function () { html.classList.remove('app-launch'); }, 650);
+        };
+        if (document.readyState === 'complete') {
+            setTimeout(hideSplash, 350);
+        } else {
+            window.addEventListener('load', function () { setTimeout(hideSplash, 250); });
+        }
+        setTimeout(hideSplash, 2500);
+    }
+
+    // pull to refresh (iOS home-screen apps have none of their own)
+    if (html.classList.contains('app')) {
+        var ptr = $('[data-ptr]');
+        var startY = null;
+        var pull = 0;
+        var refreshing = false;
+        window.addEventListener('touchstart', function (e) {
+            startY = !refreshing && !layers.length && window.scrollY <= 0 ? e.touches[0].clientY : null;
+            pull = 0;
+        }, { passive: true });
+        window.addEventListener('touchmove', function (e) {
+            if (startY === null) { return; }
+            var dy = e.touches[0].clientY - startY;
+            pull = dy > 0 ? Math.min(120, dy * 0.45) : 0;
+            ptr.classList.add('is-dragging');
+            ptr.style.setProperty('--pull', pull + 'px');
+            ptr.style.opacity = Math.min(1, pull / 55);
+            ptr.style.setProperty('--turn', (pull * 2.4) + 'deg');
+            var ready = pull > 70;
+            if (ready && !ptr.classList.contains('is-ready')) { haptic(); }
+            ptr.classList.toggle('is-ready', ready);
+        }, { passive: true });
+        window.addEventListener('touchend', function () {
+            if (startY === null) { return; }
+            startY = null;
+            ptr.classList.remove('is-dragging');
+            if (pull > 70) {
+                refreshing = true;
+                ptr.classList.add('is-loading');
+                ptr.style.setProperty('--pull', '70px');
+                setTimeout(function () { location.reload(); }, 500);
+            } else {
+                ptr.style.opacity = 0;
+                ptr.style.setProperty('--pull', '0px');
+            }
+        });
+    }
+
+    // offline notice
+    var offline = $('[data-offline]');
+    function syncOnline() { offline.hidden = navigator.onLine !== false; }
+    window.addEventListener('online', syncOnline);
+    window.addEventListener('offline', syncOnline);
+    syncOnline();
 
     /* ======================================================================
        Start
@@ -1194,4 +1408,11 @@
     setMode(state.mode);
     render();
     if (state.items.length) { reprice(); }
+
+    // app icon shortcuts: ./?source=app#cart, #promos
+    if (location.hash === '#cart' || location.hash === '#promos') {
+        var target = location.hash.slice(1);
+        history.replaceState(null, '', location.pathname + location.search);
+        if (target === 'cart') { openCart('cart'); } else { openModal('promos'); }
+    }
 })();
