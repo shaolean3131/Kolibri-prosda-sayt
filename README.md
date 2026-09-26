@@ -7,16 +7,14 @@ sunucunuzda çalışan PHP sitesi ve yönetim paneli.
 
 | Bölüm | Durum |
 |---|---|
-| Admin: giriş / ilk kurulum | hazır |
-| Admin: iskelet (üst bar, yan menü, mobil menü, animasyonlar) | hazır |
-| Admin: Дашборд (grafikler, dönem seçimi, CSV indirme) | hazır |
-| Admin: Каталог → Основное (kategori, ürün, fotoğraf, etiket, sıralama, arama) | hazır |
-| Admin: Клиенты (filtreler, gizli telefon, CSV) | hazır |
-| Admin: Акции и скидки (baner, süre, tür, promosyon kodu, ayarlar) | hazır |
-| Admin: Настройки (Главные, Формы оплаты, Предзаказы, Время работы, Юр. информация, Сниппеты) | hazır |
-| Admin: Точки и зоны доставки (harita) | vitrinle birlikte |
-| Admin: diğer menü bölümleri | ekran görüntüleri bekleniyor |
-| Vitrin (müşteri tarafı) + «ana ekrana ekle» (PWA) | sırada |
+| **Vitrin**: katalog, ürün penceresi, sepet, promosyon kodu, sipariş formu | hazır |
+| **Vitrin**: teslimat / gel-al seçimi, harita, arama, iletişim, Акции sayfası | hazır |
+| **Uygulama** (PWA): «ana ekrana ekle», çevrimdışı sayfa | hazır |
+| Admin: giriş, iskelet, Дашборд | hazır |
+| Admin: Каталог, Клиенты, Заказы, Акции и скидки | hazır |
+| Admin: Настройки (Главные, Формы оплаты, Предзаказы, Точки и зоны доставки, Время работы, Уведомления, Юр. информация, Сниппеты) | hazır |
+| Yeni sipariş → Telegram mesajı + panelde sesli bildirim | hazır |
+| Müşteri girişi (SMS), teslimat bölgesi çizimi, diğer menü bölümleri | sonra |
 
 ## Gereksinimler
 
@@ -33,12 +31,38 @@ sunucunuzda çalışan PHP sitesi ve yönetim paneli.
    sahibinin hesabı oluşturulur. İlk hesap oluşturulduktan sonra bu ekran
    kapanır.
 
-Nginx kullanıyorsanız `config/`, `storage/`, `admin/core/`, `admin/pages/`,
-`admin/tools/` klasörlerine dışarıdan erişimi kapatın:
+Nginx kullanıyorsanız `config/`, `storage/`, `site/`, `admin/core/`,
+`admin/pages/`, `admin/tools/` klasörlerine dışarıdan erişimi kapatın ve
+`uploads/` içinde PHP çalıştırmayın:
 
 ```nginx
-location ~ ^/(config|storage|admin/(core|pages|tools))/ { deny all; }
+location ~ ^/(config|storage|site|admin/(core|pages|tools))/ { deny all; }
+location ~ ^/uploads/.*\.php$ { deny all; }
 ```
+
+## Telegram bildirimleri
+
+1. Telegram'da **@BotFather** → `/newbot` ile bir bot oluşturun, token'ı kopyalayın.
+2. Panel → Настройки → Еще → **Уведомления** → «Токен бота» alanına yapıştırın.
+3. Botunuza `/start` yazın (veya botu çalışanların grubuna ekleyin).
+4. «Найти чаты» → çıkan sohbeti seçin → «Отправить тестовое сообщение».
+
+Artık her yeni sipariş anında Telegram'a gelir. Sunucunun `api.telegram.org`
+adresine erişebilmesi gerekir (Rusya'daki bazı hostinglerde kapalı olabilir;
+o durumda hosting desteğine sorun).
+
+## Uygulama (ana ekrana ekle)
+
+Site HTTPS üzerinde çalıştığında telefonda «ana ekrana ekle» ile uygulama gibi
+açılır. Android/Chrome'da alttaki «Скачивай наше приложение» kartında
+«Установить» butonu çıkar; iPhone'da kart «Поделиться → На экран Домой»
+adımlarını gösterir. Uygulamadan gelen siparişler panelde «Приложение»
+olarak işaretlenir.
+
+## Saat dilimi
+
+`config/config.php` içindeki `timezone` değeri (varsayılan `Asia/Novokuznetsk`)
+çalışma saatleri, ön sipariş saatleri ve grafikler için kullanılır.
 
 ## Yerelde deneme
 
@@ -53,6 +77,12 @@ php admin/tools/seed-demo.php
 ## Yapı
 
 ```
+index.php            vitrin (katalog, sepet, sipariş)
+page.php             Акции, gizlilik politikası, kullanım koşulları
+api/                 vitrinin API'si (sepet hesabı, sipariş)
+site/                vitrin şablon parçaları
+assets/              vitrin css/js, uygulama ikonları
+manifest.webmanifest, sw.js, offline.html   uygulama (PWA) dosyaları
 admin/
   index.php          sayfa yönlendirici (?p=dashboard, ?p=orders ...)
   login.php          giriş + ilk kurulum

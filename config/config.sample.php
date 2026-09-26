@@ -8,7 +8,7 @@
 return [
     'app_name'  => 'Колибри',
     'site_url'  => '/',
-    'timezone'  => 'Europe/Moscow',
+    'timezone'  => 'Asia/Novokuznetsk', // saat dilimi: çalışma saatleri ve ön siparişler buna göre
     'currency'  => '₽',
 
     'db' => [

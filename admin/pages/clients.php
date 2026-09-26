@@ -2,7 +2,7 @@
 defined('KOLIBRI') or exit;
 
 $filters = client_filters();
-$values  = client_filter_values($_GET);
+$values  = filter_values($filters, $_GET);
 $perPage = in_array((int) ($_GET['per_page'] ?? 100), CLIENT_PER_PAGE, true) ? (int) ($_GET['per_page'] ?? 100) : 100;
 $total   = clients_count($values);
 $pages   = max(1, (int) ceil($total / $perPage));
@@ -19,57 +19,7 @@ $exportUrl = 'api/clients.php?' . http_build_query(array_merge(['action' => 'exp
     </h1>
 </div>
 
-<?php $activeFilters = count(array_filter(array_keys($filters), static fn ($key) => client_filter_summary($key, $filters[$key], $values) !== '')); ?>
-<form class="filters reveal" style="--i: 1" method="get" action="index.php" data-filters>
-    <input type="hidden" name="p" value="clients">
-    <input type="hidden" name="per_page" value="<?= $perPage ?>">
-    <button class="btn btn--light btn--sm filters__toggle" type="button" data-filters-toggle>
-        Фильтры<?php if ($activeFilters): ?><span class="badge badge--blue"><?= $activeFilters ?></span><?php endif; ?>
-        <?= icon('chevron', 'icon filter__chevron') ?>
-    </button>
-    <?php foreach ($filters as $key => $filter):
-        $summary = client_filter_summary($key, $filter, $values); ?>
-        <div class="dropdown filter" data-dropdown>
-            <button class="filter__btn<?= $summary !== '' ? ' is-active' : '' ?>" type="button" data-dropdown-toggle>
-                <span><?= e($filter['title']) ?><?php if ($summary !== ''): ?>: <b><?= e($summary) ?></b><?php endif; ?></span>
-                <?= icon('chevron', 'icon filter__chevron') ?>
-            </button>
-            <div class="dropdown-menu filter__menu">
-                <div class="filter__title"><?= e($filter['title']) ?></div>
-                <?php if ($filter['type'] === 'text'): ?>
-                    <input class="mini-input" type="search" name="<?= $key ?>" value="<?= e($values[$key] ?? '') ?>" placeholder="Например, 912 345" inputmode="tel">
-                <?php elseif ($filter['type'] === 'date'): ?>
-                    <div class="filter__pair">
-                        <label class="mini-field"><span>С</span><input class="mini-input" type="date" name="<?= $key ?>_from" value="<?= e($values["{$key}_from"] ?? '') ?>"></label>
-                        <label class="mini-field"><span>По</span><input class="mini-input" type="date" name="<?= $key ?>_to" value="<?= e($values["{$key}_to"] ?? '') ?>"></label>
-                    </div>
-                <?php elseif ($filter['type'] === 'range'): ?>
-                    <div class="filter__pair">
-                        <label class="mini-field"><span>От</span><input class="mini-input" type="number" min="0" name="<?= $key ?>_min" value="<?= e($values["{$key}_min"] ?? '') ?>"></label>
-                        <label class="mini-field"><span>До</span><input class="mini-input" type="number" min="0" name="<?= $key ?>_max" value="<?= e($values["{$key}_max"] ?? '') ?>"></label>
-                    </div>
-                <?php else: ?>
-                    <div class="filter__options">
-                        <?php foreach ($filter['options'] as $value => $label): ?>
-                            <label class="radio">
-                                <input type="radio" name="<?= $key ?>" value="<?= e($value) ?>"<?= ($values[$key] ?? '') === $value ? ' checked' : '' ?>>
-                                <span></span><?= e($label) ?>
-                            </label>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-                <div class="filter__actions">
-                    <button class="btn btn--light btn--sm" type="button" data-filter-reset>Сбросить</button>
-                    <button class="btn btn--primary btn--sm" type="submit">Применить</button>
-                </div>
-            </div>
-        </div>
-    <?php endforeach; ?>
-    <a class="btn btn--light btn--sm filters__download" href="<?= e($exportUrl) ?>" download><?= icon('download', 'icon icon--sm') ?>Скачать весь список</a>
-    <?php if ($values): ?>
-        <a class="filters__clear" href="index.php?p=clients">Сбросить все</a>
-    <?php endif; ?>
-</form>
+<?= render_filters($filters, $values, ['p' => 'clients', 'per_page' => $perPage], $exportUrl, 'index.php?p=clients') ?>
 
 <div class="table-meta reveal" style="--i: 2">
     <span class="table-meta__count"><?= $total ?> <?= plural($total, 'клиент', 'клиента', 'клиентов') ?></span>

@@ -1,0 +1,9 @@
+DirectoryIndex index.php
+Options -Indexes
+AddType application/manifest+json .webmanifest
+
+# never serve hidden files (.git, .env ...)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+RedirectMatch 404 /\.git

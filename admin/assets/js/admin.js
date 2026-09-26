@@ -67,4 +67,102 @@
     $$('[data-sidebar-close]').forEach(function (btn) {
         btn.addEventListener('click', function () { document.body.classList.remove('sidebar-open'); });
     });
+
+    /* ---------- filter chips (clients, orders) ---------- */
+
+    document.addEventListener('click', function (e) {
+        var toggle = e.target.closest('[data-filters-toggle]');
+        if (toggle) {
+            toggle.closest('[data-filters]').classList.toggle('is-open');
+            return;
+        }
+        // "Сбросить" inside a filter dropdown clears only that filter
+        var reset = e.target.closest('[data-filter-reset]');
+        if (reset) {
+            $$('input', reset.closest('.filter__menu')).forEach(function (input) {
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+            reset.closest('form').submit();
+        }
+    });
+
+    /* ---------- new orders: badge, toast and a soft chime ---------- */
+
+    var lastOrder = +document.body.getAttribute('data-last-order') || 0;
+
+    function chime() {
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            [880, 1175].forEach(function (freq, i) {
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.0001, ctx.currentTime + i * 0.18);
+                gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + i * 0.18 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i * 0.18 + 0.5);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(ctx.currentTime + i * 0.18);
+                osc.stop(ctx.currentTime + i * 0.18 + 0.55);
+            });
+        } catch (err) { /* audio not allowed yet */ }
+    }
+
+    function setBadge(count) {
+        var link = $('.nav-link[href$="p=orders"]');
+        if (!link) {
+            return;
+        }
+        var badge = $('.badge', link);
+        if (!count) {
+            if (badge) {
+                badge.remove();
+            }
+            return;
+        }
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'badge badge--blue';
+            link.appendChild(badge);
+        }
+        if (badge.textContent !== String(count)) {
+            badge.textContent = count;
+            badge.style.animation = 'none';
+            void badge.offsetWidth;
+            badge.style.animation = '';
+        }
+    }
+
+    function poll() {
+        if (document.hidden || !window.fetch) {
+            return;
+        }
+        fetch('api/orders.php?action=poll&after=' + lastOrder, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (res) {
+                if (!res) {
+                    return;
+                }
+                setBadge(res.new);
+                if (res.orders.length) {
+                    lastOrder = res.orders[res.orders.length - 1].id;
+                    res.orders.slice(-3).forEach(function (o) {
+                        window.UI.toast('Новый заказ #' + o.id + ' · ' + o.total);
+                    });
+                    chime();
+                    var bell = $('.bell');
+                    if (bell && !$('.bell__dot', bell)) {
+                        bell.insertAdjacentHTML('beforeend', '<span class="bell__dot"></span>');
+                    }
+                }
+            })
+            .catch(function () { /* offline: try again later */ });
+    }
+
+    setInterval(poll, 20000);
+    document.addEventListener('visibilitychange', poll);
 })();

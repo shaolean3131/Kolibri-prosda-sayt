@@ -25,28 +25,4 @@
         });
     });
 
-    // mobile: filters are folded behind one button
-    var toggle = UI.$('[data-filters-toggle]');
-    if (toggle) {
-        toggle.addEventListener('click', function () {
-            toggle.closest('[data-filters]').classList.toggle('is-open');
-        });
-    }
-
-    // "Сбросить" inside a filter dropdown clears only that filter
-    document.addEventListener('click', function (e) {
-        var reset = e.target.closest('[data-filter-reset]');
-        if (!reset) {
-            return;
-        }
-        var menu = reset.closest('.filter__menu');
-        UI.$$('input', menu).forEach(function (input) {
-            if (input.type === 'radio') {
-                input.checked = false;
-            } else {
-                input.value = '';
-            }
-        });
-        reset.closest('form').submit();
-    });
 })();

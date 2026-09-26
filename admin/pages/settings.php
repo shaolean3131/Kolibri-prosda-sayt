@@ -1,6 +1,8 @@
 <?php
 defined('KOLIBRI') or exit;
 
+require_once ADMIN_DIR . '/core/orders.php';
+
 $tabs   = settings_tabs();
 $active = is_string($_GET['tab'] ?? null) && isset($tabs[$_GET['tab']]) ? $_GET['tab'] : 'main';
 $more   = array_diff(array_keys($tabs), SETTINGS_MAIN_TABS);
@@ -100,6 +102,36 @@ $renderInput = static function (array $field, string $current): string {
                         <span class="schedule__closed">Выходной</span>
                     </div>
                 <?php endforeach; ?>
+            </div>
+
+        <?php elseif ($field['type'] === 'pickup_points'): ?>
+            <div class="set-block set-block--points<?= setting('pickup_enabled', '1') === '1' ? '' : ' is-muted' ?>" data-points-block>
+                <h2 class="set-block__title set-block__title--sm">Пункты самовывоза</h2>
+                <div class="points" data-points>
+                    <?php foreach (pickup_points(false) as $point): ?>
+                        <?= render_pickup_point($point) ?>
+                    <?php endforeach; ?>
+                </div>
+                <template data-point-template><?= render_pickup_point(['id' => 0, 'address' => '', 'hours' => 'круглосуточно', 'lat' => '', 'lng' => '', 'is_active' => 1]) ?></template>
+                <button class="add-btn add-btn--inline" type="button" data-point-add><?= icon('plus', 'icon icon--sm') ?>Добавить пункт самовывоза</button>
+                <p class="set-block__hint">Координаты нужны для карты. Откройте точку в Яндекс Картах — широта и долгота указаны в карточке места.</p>
+            </div>
+
+        <?php elseif ($field['type'] === 'telegram'): ?>
+            <div class="set-block">
+                <div class="tg">
+                    <div class="tg__actions">
+                        <button class="btn btn--light btn--sm" type="button" data-tg="find"><?= icon('search', 'icon icon--sm') ?>Найти чаты</button>
+                        <button class="btn btn--primary btn--sm" type="button" data-tg="test">Отправить тестовое сообщение</button>
+                    </div>
+                    <div class="tg__chats" data-tg-chats></div>
+                    <ol class="tg__help">
+                        <li>Откройте в Telegram <b>@BotFather</b>, отправьте <code>/newbot</code> и придумайте имя боту.</li>
+                        <li>Скопируйте токен, который пришлёт BotFather, в поле «Токен бота».</li>
+                        <li>Напишите своему боту <code>/start</code> (или добавьте его в рабочую группу).</li>
+                        <li>Нажмите «Найти чаты» и выберите чат — заказы начнут приходить туда.</li>
+                    </ol>
+                </div>
             </div>
 
         <?php elseif ($field['type'] === 'notice'): ?>

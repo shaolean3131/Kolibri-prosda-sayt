@@ -8,13 +8,13 @@ define('ADMIN_DIR', dirname(__DIR__));
 $configFile = ROOT_DIR . '/config/config.php';
 $GLOBALS['kolibri_config'] = require (is_file($configFile) ? $configFile : ROOT_DIR . '/config/config.sample.php');
 
-date_default_timezone_set(config('timezone', 'Europe/Moscow'));
+date_default_timezone_set(config('timezone', 'Asia/Novokuznetsk'));
 mb_internal_encoding('UTF-8');
 
 require __DIR__ . '/schema.php';
 
 if (PHP_SAPI !== 'cli') {
-    session_name('kolibri_admin');
+    session_name(defined('KOLIBRI_SITE') ? 'kolibri_site' : 'kolibri_admin');
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',

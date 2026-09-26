@@ -17,6 +17,7 @@ function render_page(string $page, string $title, string $view, array $vars = []
     $stmt = db()->prepare("SELECT id, total, created_at FROM orders WHERE status = 'new' ORDER BY created_at DESC LIMIT 5");
     $stmt->execute();
     $notifications = $stmt->fetchAll();
+    $lastOrder = (int) db()->query('SELECT COALESCE(MAX(id), 0) FROM orders')->fetchColumn();
     ?>
 <!doctype html>
 <html lang="ru">
@@ -31,7 +32,7 @@ function render_page(string $page, string $title, string $view, array $vars = []
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="<?= e(asset('css/admin.css')) ?>">
 </head>
-<body>
+<body data-last-order="<?= $lastOrder ?>">
 <header class="topbar">
     <button class="icon-btn topbar__burger" type="button" data-sidebar-open aria-label="Меню"><?= icon('burger') ?></button>
     <a class="wordmark" href="index.php" aria-label="<?= e(config('app_name')) ?>">
@@ -50,7 +51,7 @@ function render_page(string $page, string $title, string $view, array $vars = []
                     <div class="notifications__empty">Нет новых уведомлений</div>
                 <?php endif; ?>
                 <?php foreach ($notifications as $n): ?>
-                    <a class="notification" href="index.php?p=orders">
+                    <a class="notification" href="index.php?p=orders&amp;order=<?= (int) $n['id'] ?>">
                         <span class="notification__icon"><?= icon('box') ?></span>
                         <span class="notification__body">
                             <strong>Новый заказ #<?= (int) $n['id'] ?> · <?= e(money((float) $n['total'])) ?></strong>

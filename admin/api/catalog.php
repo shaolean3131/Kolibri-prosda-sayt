@@ -1,6 +1,6 @@
 <?php
 require dirname(__DIR__) . '/core/bootstrap.php';
-require dirname(__DIR__) . '/core/catalog.php';
+require_once dirname(__DIR__) . '/core/catalog.php';
 
 api_guard();
 

@@ -79,3 +79,117 @@
         pending = {};
     });
 })();
+
+/* ---------- pickup points and Telegram (tab-specific) ---------- */
+(function () {
+    'use strict';
+
+    var UI = window.UI;
+    var points = UI.$('[data-points]');
+
+    if (points) {
+        var savers = {};
+        var saveRow = function (row) {
+            var id = row.getAttribute('data-point');
+            clearTimeout(savers[id]);
+            savers[id] = setTimeout(function () {
+                var data = { action: 'save', id: id };
+                UI.$$('[data-f]', row).forEach(function (input) {
+                    data[input.getAttribute('data-f')] = input.type === 'checkbox' ? (input.checked ? 1 : 0) : input.value;
+                });
+                row.classList.toggle('is-off', !data.is_active);
+                UI.api('api/pickup.php', data).then(function () { UI.toast('Сохранено'); });
+            }, 700);
+        };
+
+        points.addEventListener('input', function (e) {
+            if (e.target.matches('[data-f]')) {
+                saveRow(e.target.closest('[data-point]'));
+            }
+        });
+        points.addEventListener('change', function (e) {
+            if (e.target.type === 'checkbox') {
+                saveRow(e.target.closest('[data-point]'));
+            }
+        });
+        points.addEventListener('click', function (e) {
+            var del = e.target.closest('[data-point-delete]');
+            if (!del) {
+                return;
+            }
+            var row = del.closest('[data-point]');
+            UI.confirm({ title: 'Удалить пункт самовывоза?', text: UI.$('[data-f="address"]', row).value || 'Пункт без адреса' }).then(function (ok) {
+                if (ok) {
+                    UI.api('api/pickup.php', { action: 'delete', id: row.getAttribute('data-point') }).then(function () {
+                        UI.collapse(row);
+                    });
+                }
+            });
+        });
+
+        UI.$('[data-point-add]').addEventListener('click', function () {
+            UI.api('api/pickup.php', { action: 'create' }).then(function (res) {
+                var tpl = UI.$('[data-point-template]').content.firstElementChild.cloneNode(true);
+                tpl.setAttribute('data-point', res.id);
+                tpl.classList.add('is-new');
+                points.appendChild(tpl);
+                UI.$('[data-f="address"]', tpl).focus();
+            });
+        });
+
+        // the "Самовывоз" switch dims the list
+        var pickupSwitch = document.querySelector('input[name="pickup_enabled"]');
+        if (pickupSwitch) {
+            pickupSwitch.addEventListener('change', function () {
+                UI.$('[data-points-block]').classList.toggle('is-muted', !pickupSwitch.checked);
+            });
+        }
+    }
+
+    var chatsBox = UI.$('[data-tg-chats]');
+    if (chatsBox) {
+        var chatInput = document.querySelector('input[name="telegram_chat_ids"]');
+
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-tg]');
+            if (btn) {
+                UI.busy(btn, true);
+                UI.api('api/telegram.php', { action: btn.getAttribute('data-tg') }).then(function (res) {
+                    if (res.sent) {
+                        UI.toast('Сообщение отправлено — проверьте Telegram');
+                        return;
+                    }
+                    if (!res.chats.length) {
+                        chatsBox.innerHTML = '<p class="muted">Чатов не найдено. Напишите боту /start и нажмите ещё раз.</p>';
+                        return;
+                    }
+                    chatsBox.innerHTML = '';
+                    res.chats.forEach(function (chat) {
+                        var b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'tg__chat';
+                        b.setAttribute('data-chat', chat.id);
+                        b.innerHTML = '<b></b><small></small>';
+                        b.querySelector('b').textContent = chat.title;
+                        b.querySelector('small').textContent = chat.type + ' · ' + chat.id;
+                        chatsBox.appendChild(b);
+                    });
+                }).catch(function () { /* toast shown */ }).then(function () {
+                    UI.busy(btn, false);
+                });
+                return;
+            }
+            var chat = e.target.closest('[data-chat]');
+            if (chat) {
+                var ids = chatInput.value.split(/[\s,;]+/).filter(Boolean);
+                var id = chat.getAttribute('data-chat');
+                if (ids.indexOf(id) === -1) {
+                    ids.push(id);
+                }
+                chatInput.value = ids.join(', ');
+                chatInput.dispatchEvent(new Event('change', { bubbles: true }));
+                chat.classList.add('is-added');
+            }
+        });
+    }
+})();

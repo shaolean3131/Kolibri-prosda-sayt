@@ -13,6 +13,7 @@ $views = [
     'clients'    => 'clients',
     'promotions' => 'promotions',
     'settings'   => 'settings',
+    'orders'     => 'orders',
 ];
 // Page headings that differ from the menu label.
 $titles = [
@@ -31,7 +32,7 @@ if ($item === null) {
 
 $view = $views[$page] ?? 'placeholder';
 if (is_file(__DIR__ . '/core/' . $view . '.php')) {
-    require __DIR__ . '/core/' . $view . '.php';
+    require_once __DIR__ . '/core/' . $view . '.php';
 }
 
 render_page($page, $titles[$page] ?? $item['title'], $view);

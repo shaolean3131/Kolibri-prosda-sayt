@@ -1,6 +1,6 @@
 <?php
 require dirname(__DIR__) . '/core/bootstrap.php';
-require dirname(__DIR__) . '/core/stats.php';
+require_once dirname(__DIR__) . '/core/stats.php';
 
 require_admin(api: true);
 

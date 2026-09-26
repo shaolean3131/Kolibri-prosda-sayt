@@ -65,7 +65,15 @@ foreach ($catalog as $category => $products) {
     }
 }
 
-$insertOrder = $pdo->prepare('INSERT INTO orders (client_id, total, status, created_at) VALUES (?, ?, ?, ?)');
+$pdo->exec("INSERT INTO pickup_points (address, hours, sort, is_active, created_at) VALUES
+    ('Новокузнецк, Тореза 42а/1', 'круглосуточно', 1, 1, '" . date('Y-m-d H:i:s') . "'),
+    ('Новокузнецк, Советской Армии 2а/2', 'круглосуточно', 2, 1, '" . date('Y-m-d H:i:s') . "')");
+$points = $pdo->query('SELECT id FROM pickup_points')->fetchAll(PDO::FETCH_COLUMN);
+
+$clients = $pdo->query('SELECT id, name, phone FROM clients')->fetchAll(PDO::FETCH_ASSOC);
+$insertOrder = $pdo->prepare('INSERT INTO orders (client_id, client_name, phone, delivery_type, pickup_point_id, address, payment_method, subtotal, total, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+$streets = ['ул. 40 лет ВЛКСМ, 86', 'ул. Климасенко, 20/4', 'пр. Металлургов, 12', 'ул. Кирова, 55'];
 $statuses = ['done', 'done', 'done', 'done', 'cancelled'];
 for ($day = 365; $day >= 0; $day--) {
     $count = random_int(0, 6) + ($day < 30 ? 2 : 0);
@@ -74,8 +82,17 @@ for ($day = 365; $day >= 0; $day--) {
         if ($ts > time()) {
             $ts = time() - random_int(60, 3600);
         }
+        $client = $clients[array_rand($clients)];
+        $pickup = random_int(0, 1) === 1;
+        $total  = random_int(15, 120) * 100;
         $status = $day === 0 && $j < 3 ? 'new' : $statuses[array_rand($statuses)];
-        $insertOrder->execute([$clientIds[array_rand($clientIds)], random_int(15, 120) * 100, $status, date('Y-m-d H:i:s', $ts)]);
+        $stamp  = date('Y-m-d H:i:s', $ts);
+        $insertOrder->execute([
+            $client['id'], $client['name'] ?: 'Клиент', $client['phone'],
+            $pickup ? 'pickup' : 'delivery', $pickup ? $points[array_rand($points)] : null,
+            $pickup ? '' : 'Новокузнецк, ' . $streets[array_rand($streets)],
+            ['cash', 'card'][random_int(0, 1)], $total, $total, $status, $stamp, $stamp,
+        ]);
     }
 }
 

@@ -52,10 +52,36 @@ function settings_tabs(): array
              'hint' => 'Интервалы в списке времени получения.', 'options' => ['15' => '15 минут', '30' => '30 минут', '60' => '1 час']],
         ]],
         'delivery' => ['title' => 'Точки и зоны доставки', 'fields' => [
-            ['type' => 'notice', 'text' => 'Точки самовывоза и зоны доставки на карте появятся вместе с новой витриной сайта.'],
+            ['type' => 'switch', 'name' => 'pickup_enabled', 'default' => '1', 'label' => 'Самовывоз',
+             'hint' => 'Клиенты смогут забрать заказ сами из пункта самовывоза.'],
+            ['type' => 'pickup_points'],
+            ['type' => 'switch', 'name' => 'delivery_enabled', 'default' => '1', 'label' => 'Доставка',
+             'hint' => 'Курьерская доставка по адресу клиента.'],
+            ['type' => 'number', 'name' => 'delivery_price', 'default' => '0', 'label' => 'Стоимость доставки, ₽',
+             'hint' => '0 — доставка бесплатная.'],
+            ['type' => 'number', 'name' => 'delivery_free_from', 'default' => '0', 'label' => 'Бесплатная доставка от, ₽',
+             'hint' => 'Сумма заказа, с которой доставка бесплатна. 0 — не использовать.'],
+            ['type' => 'number', 'name' => 'delivery_min_order', 'default' => '0', 'label' => 'Минимальная сумма на доставку, ₽',
+             'hint' => 'Меньше этой суммы доставку оформить нельзя. 0 — без ограничения.'],
+            ['type' => 'text', 'name' => 'delivery_city', 'default' => 'Новокузнецк', 'label' => 'Город',
+             'hint' => 'Подставляется в начало адреса доставки.'],
+            ['type' => 'text', 'name' => 'map_center', 'default' => '53.7557, 87.1099', 'label' => 'Центр карты',
+             'hint' => 'Широта и долгота центра города для карты доставки.'],
+            ['type' => 'textarea', 'name' => 'delivery_info', 'title' => 'Условия доставки',
+             'placeholder' => 'Например: доставляем по Новокузнецку за 1–2 часа.',
+             'hint' => 'Показывается клиенту, когда он выбирает доставку.'],
         ]],
         'hours' => ['title' => 'Время работы', 'fields' => [
             ['type' => 'schedule', 'name' => 'schedule'],
+        ]],
+        'notifications' => ['title' => 'Уведомления', 'fields' => [
+            ['type' => 'switch', 'name' => 'telegram_enabled', 'default' => '1', 'label' => 'Заказы в Telegram',
+             'hint' => 'Каждый новый заказ сразу придёт сообщением в Telegram.'],
+            ['type' => 'text', 'name' => 'telegram_token', 'label' => 'Токен бота',
+             'hint' => 'Создайте бота в @BotFather и вставьте сюда его токен.'],
+            ['type' => 'text', 'name' => 'telegram_chat_ids', 'label' => 'ID чатов',
+             'hint' => 'Кому отправлять заказы, через запятую. Проще всего — кнопка «Найти чаты».'],
+            ['type' => 'telegram'],
         ]],
         'legal' => ['title' => 'Юридическая информация', 'fields' => [
             ['type' => 'text', 'name' => 'legal_name', 'label' => 'Название организации или ИП'],
@@ -127,4 +153,16 @@ function settings_clean(array $field, string $value): ?string
         'textarea' => mb_substr($value, 0, 20000),
         default    => mb_substr(trim($value), 0, 500),
     };
+}
+
+function render_pickup_point(array $point): string
+{
+    $coords = $point['lat'] !== '' ? $point['lat'] . ', ' . $point['lng'] : '';
+    return '<div class="point' . ($point['is_active'] ? '' : ' is-off') . '" data-point="' . (int) $point['id'] . '">'
+        . '<input class="set-input point__address" data-f="address" value="' . e($point['address']) . '" placeholder="Адрес, например: Новокузнецк, Тореза 42а/1">'
+        . '<input class="set-input point__hours" data-f="hours" value="' . e($point['hours']) . '" placeholder="Часы работы">'
+        . '<input class="set-input point__coords" data-f="coords" value="' . e($coords) . '" placeholder="Координаты" inputmode="decimal">'
+        . '<label class="switch switch--md" title="Показывать клиентам"><input type="checkbox" data-f="is_active"' . ($point['is_active'] ? ' checked' : '') . '><span class="switch__track"></span></label>'
+        . '<button class="tool tool--danger" type="button" title="Удалить" data-point-delete>' . icon('trash') . '</button>'
+        . '</div>';
 }

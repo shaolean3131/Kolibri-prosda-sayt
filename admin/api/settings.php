@@ -1,6 +1,6 @@
 <?php
 require dirname(__DIR__) . '/core/bootstrap.php';
-require dirname(__DIR__) . '/core/settings.php';
+require_once dirname(__DIR__) . '/core/settings.php';
 
 api_guard();
 

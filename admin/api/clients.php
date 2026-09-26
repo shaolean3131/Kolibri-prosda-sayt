@@ -1,12 +1,12 @@
 <?php
 require dirname(__DIR__) . '/core/bootstrap.php';
-require dirname(__DIR__) . '/core/clients.php';
+require_once dirname(__DIR__) . '/core/clients.php';
 
 $action = is_string($_GET['action'] ?? null) ? $_GET['action'] : '';
 
 if ($action === 'export') {
     require_admin();
-    $values = client_filter_values($_GET);
+    $values = filter_values(client_filters(), $_GET);
     [$sql, $params] = clients_query($values);
     $stmt = db()->prepare($sql);
     $stmt->execute($params);
