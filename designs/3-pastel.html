@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Колибри — Пастель (концепт 3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&display=swap">
+<style>
+:root {
+    --ink: #22182b;
+    --bg: #ffe4ec;
+    --violet: #7b2fd0;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 500 17px/1.5 "Onest", system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; transition: background-color .8s ease; }
+a { color: inherit; text-decoration: none; }
+.wrap { width: min(1240px, 100% - 32px); margin: 0 auto; }
+
+.ph { position: relative; overflow: hidden; background: radial-gradient(90% 80% at 25% 20%, #ffd0de, transparent 60%), radial-gradient(90% 80% at 80% 85%, #dcd0ff, transparent 60%), #fff3f6; }
+.ph::before { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23c58aa6' stroke-width='1' opacity='.6'%3E%3Cpath d='M50 62c-8 0-13-6-13-14V38l6 5 7-8 7 8 6-5v10c0 8-5 14-13 14zM50 62v24M50 76c-5-6-12-7-16-4M50 80c4-5 10-6 14-3'/%3E%3C/g%3E%3C/svg%3E") center / 36% no-repeat; }
+.ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ph img.missing { display: none; }
+
+/* ---------- header ---------- */
+.hdr { position: fixed; inset: 14px 0 auto; z-index: 40; }
+.hdr .wrap { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px 10px 22px; border-radius: 99px; background: rgba(255, 255, 255, .7); backdrop-filter: blur(14px); box-shadow: 0 8px 30px rgba(34, 24, 43, .08); }
+.logo { font-weight: 900; font-size: 20px; letter-spacing: .06em; background: linear-gradient(90deg, #7b2fd0, #e0569b); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hdr nav { display: flex; gap: 6px; }
+.hdr nav a { padding: 10px 16px; border-radius: 99px; font-size: 15px; transition: background .25s; }
+.hdr nav a:hover { background: rgba(123, 47, 208, .08); }
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 99px; background: var(--ink); color: #fff; font-weight: 700; font-size: 15px; transition: transform .35s var(--spring); will-change: transform; }
+
+/* ---------- hero: photo grows to full screen ---------- */
+.hero { position: relative; height: 260vh; }
+.hero__sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; display: grid; place-items: center; }
+.hero__title { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; }
+.hero__title h1 { margin: 0; font: 900 clamp(56px, 12vw, 200px)/.88 "Onest"; letter-spacing: -.04em; }
+.hero__title h1 span { display: block; }
+.hero__title h1 .o { color: transparent; -webkit-text-stroke: 2px var(--ink); }
+.hero__title p { margin: 22px auto 0; max-width: 460px; padding: 0 20px; font-size: 18px; }
+.hero__img { width: 26vw; height: 34vw; min-width: 180px; min-height: 240px; border-radius: 999px; will-change: transform, border-radius; }
+.sticker { position: absolute; z-index: 3; padding: 12px 18px; border-radius: 20px; background: #fff; font-weight: 800; font-size: 15px; box-shadow: 0 14px 30px rgba(34, 24, 43, .12); animation: float 4s ease-in-out infinite; }
+.sticker.s1 { left: 12%; top: 22%; transform: rotate(-8deg); background: #fff6b8; }
+.sticker.s2 { right: 12%; top: 30%; animation-delay: -1.5s; background: #d8ffe7; }
+.sticker.s3 { left: 18%; bottom: 18%; animation-delay: -2.5s; background: #e9ddff; }
+
+/* ---------- bento ---------- */
+.section-title { margin: 0 0 40px; font: 900 clamp(40px, 6vw, 92px)/.95 "Onest"; letter-spacing: -.04em; }
+.bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 230px; gap: 16px; padding: 120px 0; }
+.tile { position: relative; border-radius: 32px; overflow: hidden; padding: 24px; display: flex; flex-direction: column; justify-content: flex-end; background: #fff; opacity: 0; transform: scale(.85) translateY(40px); transition: opacity .7s var(--ease), transform .9s var(--spring), box-shadow .3s; }
+.tile.in { opacity: 1; transform: none; }
+.tile:hover { box-shadow: 0 20px 50px rgba(34, 24, 43, .15); }
+.tile .ph { position: absolute; inset: 0; }
+.tile .ph img { transition: transform 1s var(--ease); }
+.tile:hover .ph img { transform: scale(1.08); }
+.tile.photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 45%, rgba(34, 24, 43, .55)); }
+.tile h3 { position: relative; z-index: 1; margin: 0; font: 800 26px/1.05 "Onest"; }
+.tile.photo h3, .tile.photo small { color: #fff; }
+.tile small { position: relative; z-index: 1; opacity: .8; }
+.t-big { grid-column: span 2; grid-row: span 2; }
+.t-wide { grid-column: span 2; }
+.t-tall { grid-row: span 2; }
+.t-yellow { background: #fff2a8; }
+.t-violet { background: var(--violet); color: #fff; }
+.t-mint { background: #c9f5dd; }
+.big-num { font: 900 86px/.9 "Onest"; letter-spacing: -.04em; }
+.arrow { position: absolute; top: 20px; right: 20px; z-index: 1; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: #fff; color: var(--ink); font-size: 20px; transition: transform .4s var(--spring); }
+.tile:hover .arrow { transform: rotate(-45deg) scale(1.1); }
+
+/* ---------- stacking cards ---------- */
+.stack { padding: 40px 0 120px; }
+.stack__card { position: sticky; top: 110px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; min-height: 66vh; margin-bottom: 40px; padding: 40px; border-radius: 40px; background: #fff; box-shadow: 0 -10px 40px rgba(34, 24, 43, .06); transform-origin: top center; will-change: transform; }
+.stack__card:nth-child(2) { background: #ffe0ea; }
+.stack__card:nth-child(3) { background: #e8ddff; }
+.stack__card:nth-child(4) { background: #d6f6e5; }
+.stack__num { font: 900 120px/.8 "Onest"; letter-spacing: -.06em; opacity: .12; }
+.stack__card h3 { margin: 20px 0 14px; font: 800 clamp(30px, 3.6vw, 52px)/1 "Onest"; letter-spacing: -.03em; }
+.stack__card p { max-width: 420px; font-size: 19px; opacity: .8; }
+.stack__card .ph { border-radius: 28px; min-height: 300px; }
+
+/* ---------- marquee of photos tilting with scroll ---------- */
+.ribbon { padding: 60px 0; overflow: hidden; }
+.ribbon__row { display: flex; gap: 18px; width: max-content; will-change: transform; }
+.ribbon__row .ph { width: 260px; height: 320px; border-radius: 28px; flex: none; }
+.ribbon__row:nth-child(2) { margin-top: 18px; }
+
+/* ---------- addresses ---------- */
+.addr { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; padding: 100px 0; }
+.addr__card { padding: 36px; border-radius: 36px; background: #fff; transition: transform .5s var(--spring); }
+.addr__card:hover { transform: translateY(-8px) rotate(-1deg); }
+.addr__card h3 { margin: 10px 0 6px; font: 800 34px/1 "Onest"; letter-spacing: -.02em; }
+.chip { display: inline-block; padding: 6px 12px; border-radius: 99px; background: #c9f5dd; font-weight: 700; font-size: 13px; }
+
+/* ---------- final ---------- */
+.final { padding: 140px 0; text-align: center; }
+.final h2 { margin: 0 0 30px; font: 900 clamp(48px, 9vw, 150px)/.9 "Onest"; letter-spacing: -.05em; }
+.final h2 span { display: inline-block; transition: transform .6s var(--spring), color .3s; }
+.final h2 span:hover { transform: translateY(-14px) rotate(-6deg); color: var(--violet); }
+footer { padding: 30px 0 50px; font-size: 14px; opacity: .6; text-align: center; }
+
+@keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+
+@media (max-width: 900px) {
+    .hdr nav { display: none; }
+    .bento { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 190px; }
+    .t-big { grid-column: span 2; }
+    .stack__card { grid-template-columns: 1fr; padding: 28px; }
+    .addr { grid-template-columns: 1fr; }
+    .hero__img { width: 56vw; height: 74vw; }
+    .sticker { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr"><div class="wrap">
+    <span class="logo">КОЛИБРИ</span>
+    <nav><a href="#bento">Букеты</a><a href="#stack">Почему мы</a><a href="#addr">Адреса</a></nav>
+    <a class="btn" data-magnet href="#bento">Заказать 🌷</a>
+</div></header>
+
+<section class="hero" id="hero">
+    <div class="hero__sticky">
+        <div class="hero__title" id="htitle">
+            <h1><span>Цветы</span><span class="o">с любовью</span></h1>
+            <p>Студия цветов «Колибри» · Новокузнецк · круглосуточно</p>
+        </div>
+        <div class="ph hero__img" id="himg"><img src="img/1.jpg" alt=""></div>
+        <div class="sticker s1">Свежие каждый день ✿</div>
+        <div class="sticker s2">Доставка и самовывоз</div>
+        <div class="sticker s3">Открытка в подарок? ✉️</div>
+    </div>
+</section>
+
+<section class="wrap bento" id="bento" data-bg="#fff6dc">
+    <a class="tile photo t-big" href="#"><div class="ph"><img src="img/4.jpg" alt=""></div><span class="arrow">→</span><small>Коллекция</small><h3>Монобукеты</h3></a>
+    <div class="tile t-yellow"><div class="big-num">24/7</div><h3>Работаем круглосуточно</h3></div>
+    <a class="tile photo t-tall" href="#"><div class="ph"><img src="img/5.jpg" alt=""></div><span class="arrow">→</span><small>Коллекция</small><h3>Авторские букеты</h3></a>
+    <div class="tile t-violet"><small>Приложение</small><h3>Заказывай в пару касаний</h3></div>
+    <a class="tile photo t-wide" href="#"><div class="ph"><img src="img/6.jpg" alt=""></div><span class="arrow">→</span><small>Коллекция</small><h3>Композиции</h3></a>
+    <a class="tile photo" href="#"><div class="ph"><img src="img/7.jpg" alt=""></div><small>Коллекция</small><h3>Открытки</h3></a>
+    <div class="tile t-mint"><div class="big-num">2</div><h3>студии в городе</h3></div>
+</section>
+
+<section class="wrap stack" id="stack" data-bg="#efe7ff">
+    <h2 class="section-title">Почему<br>«Колибри»</h2>
+    <div class="stack__card"><div><div class="stack__num">01</div><h3>Собираем вручную</h3><p>Каждый букет флорист собирает под ваш повод: день рождения, свидание или просто так.</p></div><div class="ph"><img src="img/9.jpg" alt=""></div></div>
+    <div class="stack__card"><div><div class="stack__num">02</div><h3>Ко времени</h3><p>Как можно скорее или предзаказ на точный день и час — курьер или самовывоз.</p></div><div class="ph"><img src="img/8.jpg" alt=""></div></div>
+    <div class="stack__card"><div><div class="stack__num">03</div><h3>С душой в деталях</h3><p>Упаковка, лента, открытка с вашими словами — мелочи, которые запоминаются.</p></div><div class="ph"><img src="img/10.jpg" alt=""></div></div>
+    <div class="stack__card"><div><div class="stack__num">04</div><h3>Всегда на связи</h3><p>Студии работают круглосуточно — даже если вспомнили о празднике в последний момент.</p></div><div class="ph"><img src="img/3.jpg" alt=""></div></div>
+</section>
+
+<section class="ribbon" data-bg="#ffe4ec">
+    <div class="ribbon__row" id="r1"><div class="ph"><img src="img/2.jpg" alt=""></div><div class="ph"><img src="img/3.jpg" alt=""></div><div class="ph"><img src="img/4.jpg" alt=""></div><div class="ph"><img src="img/5.jpg" alt=""></div><div class="ph"><img src="img/6.jpg" alt=""></div><div class="ph"><img src="img/7.jpg" alt=""></div><div class="ph"><img src="img/8.jpg" alt=""></div><div class="ph"><img src="img/2.jpg" alt=""></div></div>
+    <div class="ribbon__row" id="r2"><div class="ph"><img src="img/8.jpg" alt=""></div><div class="ph"><img src="img/7.jpg" alt=""></div><div class="ph"><img src="img/6.jpg" alt=""></div><div class="ph"><img src="img/5.jpg" alt=""></div><div class="ph"><img src="img/4.jpg" alt=""></div><div class="ph"><img src="img/3.jpg" alt=""></div><div class="ph"><img src="img/2.jpg" alt=""></div><div class="ph"><img src="img/1.jpg" alt=""></div></div>
+</section>
+
+<section class="wrap addr" id="addr" data-bg="#dcf7e8">
+    <div class="addr__card"><span class="chip">● Открыто 24/7</span><h3>Тореза, 42а/1</h3><p>Новокузнецк</p></div>
+    <div class="addr__card"><span class="chip">● Открыто 24/7</span><h3>Советской Армии, 2а/2</h3><p>Новокузнецк</p></div>
+</section>
+
+<section class="wrap final" data-bg="#fff6dc">
+    <h2 id="final">Порадуйте кого-то сегодня</h2>
+    <a class="btn" data-magnet href="#bento">Выбрать букет →</a>
+</section>
+<footer>© Колибри, студия цветов · концепт 3 — «Пастель»</footer>
+
+<script>
+(function () {
+    var $ = function (s) { return document.querySelector(s); };
+    var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var clamp = function (v) { return Math.min(1, Math.max(0, v)); };
+
+    $$('.ph img').forEach(function (img) {
+        img.addEventListener('error', function () { img.classList.add('missing'); });
+        if (img.complete && !img.naturalWidth) { img.classList.add('missing'); }
+    });
+
+    // final title: every letter bounces on hover
+    var f = $('#final');
+    f.innerHTML = f.textContent.split('').map(function (c) { return c === ' ' ? ' ' : '<span>' + c + '</span>'; }).join('');
+
+    // bento tiles spring in
+    var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: .2 });
+    $$('.tile').forEach(function (t, i) { t.style.transitionDelay = (i % 4) * .08 + 's'; io.observe(t); });
+
+    // the page colour changes with each section
+    var bgIo = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { document.body.style.backgroundColor = e.target.dataset.bg; } });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    $$('[data-bg]').forEach(function (s) { bgIo.observe(s); });
+
+    // magnetic buttons
+    $$('[data-magnet]').forEach(function (b) {
+        b.addEventListener('mousemove', function (e) {
+            var r = b.getBoundingClientRect();
+            b.style.transform = 'translate(' + (e.clientX - r.left - r.width / 2) * .3 + 'px,' + (e.clientY - r.top - r.height / 2) * .4 + 'px)';
+        });
+        b.addEventListener('mouseleave', function () { b.style.transform = ''; });
+    });
+
+    var hero = $('#hero'), himg = $('#himg'), htitle = $('#htitle');
+    function frame() {
+        // hero: the oval photo grows to fill the screen, the title fades away
+        var hr = hero.getBoundingClientRect();
+        var p = clamp(-hr.top / (hr.height - innerHeight));
+        var sx = innerWidth / himg.offsetWidth, sy = innerHeight / himg.offsetHeight;
+        var s = 1 + (Math.max(sx, sy) - 1) * p;
+        himg.style.transform = 'scale(' + s + ')';
+        himg.style.borderRadius = (999 * (1 - p) + 0) + 'px';
+        htitle.style.opacity = 1 - p * 2.2;
+        htitle.style.transform = 'scale(' + (1 + p * .3) + ')';
+        $$('.sticker').forEach(function (st, i) { st.style.opacity = 1 - p * 3; });
+
+        // stacking cards: the one underneath shrinks back
+        var cards = $$('.stack__card');
+        cards.forEach(function (c, i) {
+            var next = cards[i + 1];
+            if (!next) { return; }
+            var k = clamp(1 - (next.getBoundingClientRect().top - 110) / innerHeight);
+            c.style.transform = 'scale(' + (1 - k * .08) + ')';
+            c.style.filter = 'brightness(' + (1 - k * .12) + ')';
+        });
+
+        // photo ribbons move in opposite directions
+        var rb = $('.ribbon').getBoundingClientRect();
+        var rp = (innerHeight - rb.top) / (innerHeight + rb.height);
+        $('#r1').style.transform = 'translateX(' + (-rp * 500) + 'px) rotate(-3deg)';
+        $('#r2').style.transform = 'translateX(' + (rp * 500 - 600) + 'px) rotate(-3deg)';
+
+        requestAnimationFrame(frame);
+    }
+    if (!reduce) { requestAnimationFrame(frame); }
+})();
+</script>
+</body>
+</html>

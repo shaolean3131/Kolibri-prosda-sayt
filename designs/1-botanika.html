@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Колибри — Ботаника (концепт 1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root {
+    --cream: #f6f1e9;
+    --paper: #fbf8f3;
+    --ink: #1d1a17;
+    --muted: #8a8279;
+    --sage: #7d8b6a;
+    --rose: #c98b8b;
+    --line: rgba(29, 26, 23, .14);
+    --ease: cubic-bezier(.2, .7, .1, 1);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--cream); color: var(--ink); font: 400 16px/1.6 "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+.serif { font-family: "Cormorant Garamond", Georgia, serif; }
+.wrap { width: min(1320px, 100% - 48px); margin: 0 auto; }
+
+/* photo slot: shows your photo from img/, or a soft painted placeholder */
+.ph { position: relative; overflow: hidden; background: radial-gradient(120% 90% at 30% 20%, #ecd9d3, transparent 60%), radial-gradient(90% 80% at 80% 90%, #d9e0cc, transparent 60%), #efe6da; }
+.ph::before { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23b99c8f' stroke-width='.8' opacity='.6'%3E%3Cpath d='M50 62c-8 0-13-6-13-14V38l6 5 7-8 7 8 6-5v10c0 8-5 14-13 14zM50 62v24M50 76c-5-6-12-7-16-4M50 80c4-5 10-6 14-3'/%3E%3C/g%3E%3C/svg%3E") center / 38% no-repeat; }
+.ph img { position: absolute; inset: -8% 0; width: 100%; height: 116%; object-fit: cover; will-change: transform; }
+.ph img.missing { display: none; }
+
+/* ---------- loader ---------- */
+.loader { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--ink); color: var(--cream); transition: transform 1.1s var(--ease) .2s; }
+.loader.done { transform: translateY(-100%); }
+.loader svg { width: 120px; }
+.loader path, .loader circle { stroke-dasharray: 400; stroke-dashoffset: 400; animation: draw 1.6s var(--ease) forwards; }
+.loader p { margin: 18px 0 0; font: italic 500 22px "Cormorant Garamond", serif; letter-spacing: .1em; opacity: 0; animation: fade .8s .8s forwards; text-align: center; }
+
+/* ---------- header ---------- */
+.hdr { position: fixed; inset: 0 0 auto; z-index: 50; transition: background .4s, transform .5s var(--ease); }
+.hdr.solid { background: rgba(246, 241, 233, .82); backdrop-filter: blur(14px); }
+.hdr.hide { transform: translateY(-100%); }
+.hdr .wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+.brand { display: flex; align-items: baseline; gap: 10px; font: 600 26px "Cormorant Garamond", serif; letter-spacing: .14em; }
+.brand small { font: 500 10px "Inter"; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; }
+.nav { display: flex; gap: 34px; font-size: 14px; }
+.nav a { position: relative; }
+.nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform .5s var(--ease); }
+.nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+.pill { display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px; border: 1px solid var(--ink); border-radius: 99px; font-size: 14px; font-weight: 500; transition: background .35s, color .35s; }
+.pill:hover { background: var(--ink); color: var(--cream); }
+
+/* ---------- hero ---------- */
+.hero { position: relative; min-height: 100vh; padding-top: 140px; }
+.hero h1 { margin: 0; font: 400 clamp(54px, 9.5vw, 156px)/.92 "Cormorant Garamond", serif; letter-spacing: -.02em; }
+.hero h1 em { font-style: italic; color: var(--rose); }
+.line { display: block; overflow: hidden; }
+.line > span { display: inline-block; transform: translateY(110%); transition: transform 1.2s var(--ease); }
+.ready .line > span { transform: none; }
+.line:nth-child(2) > span { transition-delay: .12s; }
+.line:nth-child(3) > span { transition-delay: .24s; }
+.hero__row { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: end; }
+.hero__aside { padding-bottom: 18px; max-width: 360px; justify-self: end; opacity: 0; transform: translateY(20px); transition: 1s var(--ease) .6s; }
+.ready .hero__aside { opacity: 1; transform: none; }
+.hero__aside p { margin: 0 0 22px; color: var(--muted); }
+.hero__pics { position: relative; height: 70vh; margin-top: 60px; }
+.hero__pics .ph { position: absolute; border-radius: 2px; }
+.hero__pics .a { left: 0; top: 0; width: 34%; height: 100%; clip-path: inset(100% 0 0 0); transition: clip-path 1.6s var(--ease) .3s; }
+.hero__pics .b { left: 38%; top: 14%; width: 28%; height: 72%; clip-path: inset(100% 0 0 0); transition: clip-path 1.6s var(--ease) .45s; }
+.hero__pics .c { right: 0; top: -6%; width: 30%; height: 88%; clip-path: inset(100% 0 0 0); transition: clip-path 1.6s var(--ease) .6s; }
+.ready .hero__pics .ph { clip-path: inset(0 0 0 0); }
+.scroll-hint { position: absolute; left: 50%; bottom: 26px; width: 1px; height: 70px; background: var(--line); overflow: hidden; }
+.scroll-hint::after { content: ""; position: absolute; inset: 0; background: var(--ink); animation: hint 2s var(--ease) infinite; }
+
+/* ---------- marquee ---------- */
+.marquee { margin: 120px 0 0; padding: 26px 0; border-block: 1px solid var(--line); overflow: hidden; white-space: nowrap; }
+.marquee__track { display: inline-flex; gap: 60px; font: italic 400 clamp(36px, 5vw, 72px)/1 "Cormorant Garamond", serif; will-change: transform; }
+.marquee__track span::after { content: "✿"; margin-left: 60px; font-style: normal; font-size: .45em; vertical-align: middle; color: var(--rose); }
+
+/* ---------- about: words light up while scrolling ---------- */
+.about { padding: 180px 0 120px; }
+.eyebrow { font-size: 12px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+.reveal-text { margin: 28px 0 0; max-width: 1100px; font: 400 clamp(30px, 4.2vw, 62px)/1.18 "Cormorant Garamond", serif; }
+.reveal-text .w { color: rgba(29, 26, 23, .16); transition: color .3s; }
+.reveal-text .w.on { color: var(--ink); }
+
+/* ---------- horizontal gallery ---------- */
+.hscroll { position: relative; }
+.hscroll__sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+.hscroll__head { display: flex; justify-content: space-between; align-items: end; margin-bottom: 40px; }
+.hscroll__head h2 { margin: 0; font: 400 clamp(40px, 6vw, 88px)/1 "Cormorant Garamond", serif; }
+.progress { width: 220px; height: 1px; background: var(--line); }
+.progress i { display: block; height: 100%; background: var(--ink); transform-origin: left; transform: scaleX(0); }
+.track { display: flex; gap: 32px; padding-left: max(24px, calc((100vw - 1320px) / 2)); will-change: transform; }
+.card { flex: 0 0 clamp(260px, 26vw, 380px); }
+.card .ph { aspect-ratio: 3 / 4; }
+.card .ph img { transition: transform 1.2s var(--ease); }
+.card:hover .ph img { transform: scale(1.06); }
+.card__meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; }
+.card__name { font: 500 26px/1.1 "Cormorant Garamond", serif; }
+.card__cat { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.card__price { font-weight: 500; }
+
+/* ---------- numbers ---------- */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); margin-top: 140px; }
+.stat { padding: 46px 0 50px; border-right: 1px solid var(--line); text-align: center; }
+.stat:last-child { border-right: 0; }
+.stat b { display: block; font: 400 clamp(48px, 6vw, 92px)/1 "Cormorant Garamond", serif; }
+.stat span { font-size: 13px; color: var(--muted); letter-spacing: .08em; }
+
+/* ---------- split: big image that unmasks ---------- */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; padding: 160px 0; }
+.split .ph { aspect-ratio: 4 / 5; clip-path: inset(18% 18% 18% 18% round 300px 300px 0 0); transition: clip-path 1.6s var(--ease); }
+.split .ph.in { clip-path: inset(0 0 0 0 round 300px 300px 0 0); }
+.split h2 { margin: 18px 0 26px; font: 400 clamp(40px, 5vw, 76px)/1.02 "Cormorant Garamond", serif; }
+.steps { list-style: none; margin: 36px 0 0; padding: 0; counter-reset: s; }
+.steps li { position: relative; padding: 22px 0 22px 64px; border-top: 1px solid var(--line); counter-increment: s; }
+.steps li::before { content: "0" counter(s); position: absolute; left: 0; top: 20px; font: italic 500 26px "Cormorant Garamond", serif; color: var(--rose); }
+.steps b { display: block; font-weight: 500; }
+.steps span { color: var(--muted); font-size: 15px; }
+
+/* ---------- studios ---------- */
+.studios { padding: 40px 0 160px; }
+.studios__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; margin-top: 50px; }
+.studio { position: relative; padding: 40px; border: 1px solid var(--line); background: var(--paper); overflow: hidden; }
+.studio::before { content: ""; position: absolute; inset: 0; background: var(--ink); transform: translateY(101%); transition: transform .8s var(--ease); }
+.studio:hover::before { transform: none; }
+.studio > * { position: relative; transition: color .6s; }
+.studio:hover > * { color: var(--cream); }
+.studio h3 { margin: 0 0 8px; font: 400 36px/1.1 "Cormorant Garamond", serif; }
+.studio p { margin: 0; color: var(--muted); }
+.studio .tag { display: inline-block; margin-top: 26px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; }
+
+/* ---------- footer ---------- */
+.ftr { background: var(--ink); color: var(--cream); padding: 120px 0 40px; overflow: hidden; }
+.ftr__cta { display: flex; justify-content: space-between; align-items: end; gap: 40px; flex-wrap: wrap; }
+.ftr__cta h2 { margin: 0; font: 400 clamp(44px, 6vw, 96px)/1 "Cormorant Garamond", serif; }
+.ftr .pill { border-color: var(--cream); }
+.ftr .pill:hover { background: var(--cream); color: var(--ink); }
+.giant { margin-top: 100px; font: 500 clamp(80px, 21vw, 340px)/.8 "Cormorant Garamond", serif; letter-spacing: .04em; text-align: center; white-space: nowrap; }
+.giant span { display: inline-block; transform: translateY(100%); transition: transform 1.2s var(--ease); }
+.giant.in span { transform: none; }
+.ftr__bottom { display: flex; justify-content: space-between; margin-top: 40px; font-size: 13px; opacity: .55; }
+
+/* generic reveal */
+[data-reveal] { opacity: 0; transform: translateY(40px); transition: opacity 1.1s var(--ease), transform 1.1s var(--ease); }
+[data-reveal].in { opacity: 1; transform: none; }
+
+/* custom cursor */
+.cursor { position: fixed; top: 0; left: 0; z-index: 90; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink); pointer-events: none; mix-blend-mode: difference; filter: invert(1); transition: width .3s, height .3s, margin .3s; }
+.cursor.big { width: 64px; height: 64px; margin: -32px 0 0 -32px; }
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fade { to { opacity: 1; } }
+@keyframes hint { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+
+@media (max-width: 860px) {
+    .nav, .hdr .pill { display: none; }
+    .hero__row, .split { grid-template-columns: 1fr; }
+    .hero__aside { justify-self: start; }
+    .hero__pics { height: 56vh; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(2) { border-right: 0; }
+    .studios__grid { grid-template-columns: 1fr; }
+    .split { gap: 40px; padding: 100px 0; }
+    .cursor { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .line > span, .hero__aside, [data-reveal], .giant span { transform: none !important; opacity: 1 !important; } .hero__pics .ph, .split .ph { clip-path: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+    <div>
+        <svg viewBox="0 0 520 440" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 18 124 98"/><path d="M122 96c24-24 66-16 72 22 6 48-26 88-14 136 12 46 58 76 110 94"/>
+            <path d="M208 206c70-54 160-76 270-66M222 226c72-40 160-50 280-34M232 246c70-26 150-28 250-4M240 266c56-10 116-4 180 22"/>
+            <path d="M262 340l18 84M292 344l34 76M322 342l46 62"/>
+        </svg>
+        <p>студия цветов</p>
+    </div>
+</div>
+<div class="cursor" id="cursor"></div>
+
+<header class="hdr" id="hdr">
+    <div class="wrap">
+        <a class="brand" href="#">КОЛИБРИ <small>студия цветов</small></a>
+        <nav class="nav"><a href="#about">О студии</a><a href="#bouquets">Букеты</a><a href="#order">Как заказать</a><a href="#studios">Адреса</a></nav>
+        <a class="pill" href="#bouquets">Выбрать букет →</a>
+    </div>
+</header>
+
+<section class="hero wrap">
+    <div class="hero__row">
+        <h1>
+            <span class="line"><span>Цветы,</span></span>
+            <span class="line"><span>которые <em>говорят</em></span></span>
+            <span class="line"><span>за вас</span></span>
+        </h1>
+        <div class="hero__aside">
+            <p>Монобукеты, авторские букеты и композиции в Новокузнецке. Соберём к нужному часу, доставим или подготовим к самовывозу — круглосуточно.</p>
+            <a class="pill" href="#bouquets">Смотреть каталог →</a>
+        </div>
+    </div>
+    <div class="hero__pics">
+        <div class="ph a"><img data-speed="-.08" src="img/1.jpg" alt=""></div>
+        <div class="ph b"><img data-speed=".06" src="img/2.jpg" alt=""></div>
+        <div class="ph c"><img data-speed="-.14" src="img/3.jpg" alt=""></div>
+    </div>
+    <div class="scroll-hint"></div>
+</section>
+
+<div class="marquee"><div class="marquee__track" id="marquee">
+    <span>Монобукеты</span><span>Авторские букеты</span><span>Композиции</span><span>Открытки и сувениры</span>
+    <span>Монобукеты</span><span>Авторские букеты</span><span>Композиции</span><span>Открытки и сувениры</span>
+</div></div>
+
+<section class="about wrap" id="about">
+    <div class="eyebrow" data-reveal>О студии</div>
+    <p class="reveal-text" id="reveal-text">Колибри — маленькая студия с большой любовью к цветам. Мы каждый день выбираем свежие стебли, собираем букеты вручную и бережно упаковываем, чтобы ваш подарок сказал всё, что не помещается в слова.</p>
+</section>
+
+<section class="hscroll" id="bouquets">
+    <div class="hscroll__sticky">
+        <div class="wrap hscroll__head">
+            <div><div class="eyebrow">Каталог</div><h2>Любимые <em>букеты</em></h2></div>
+            <div class="progress"><i id="hprogress"></i></div>
+        </div>
+        <div class="track" id="track">
+            <article class="card"><div class="ph"><img src="img/4.jpg" alt=""></div><div class="card__meta"><div><div class="card__cat">Монобукет</div><div class="card__name">Фиалковый рассвет</div></div><div class="card__price">2500 ₽</div></div></article>
+            <article class="card"><div class="ph"><img src="img/5.jpg" alt=""></div><div class="card__meta"><div><div class="card__cat">Композиция</div><div class="card__name">Розовая сказка</div></div><div class="card__price">2420 ₽</div></div></article>
+            <article class="card"><div class="ph"><img src="img/6.jpg" alt=""></div><div class="card__meta"><div><div class="card__cat">Композиция</div><div class="card__name">Морская акварель</div></div><div class="card__price">2520 ₽</div></div></article>
+            <article class="card"><div class="ph"><img src="img/7.jpg" alt=""></div><div class="card__meta"><div><div class="card__cat">Композиция</div><div class="card__name">Голубая мечта</div></div><div class="card__price">2150 ₽</div></div></article>
+            <article class="card"><div class="ph"><img src="img/8.jpg" alt=""></div><div class="card__meta"><div><div class="card__cat">Монобукет</div><div class="card__name">Розы в ленте</div></div><div class="card__price">3200 ₽</div></div></article>
+            <article class="card"><div class="ph"><img src="img/2.jpg" alt=""></div><div class="card__meta"><div><div class="card__cat">Авторский</div><div class="card__name">Персиковое облако</div></div><div class="card__price">2850 ₽</div></div></article>
+        </div>
+    </div>
+</section>
+
+<div class="wrap">
+    <div class="stats" id="stats">
+        <div class="stat"><b data-count="24">0</b><span>часа в сутки на связи</span></div>
+        <div class="stat"><b data-count="2">0</b><span>студии в Новокузнецке</span></div>
+        <div class="stat"><b data-count="4">0</b><span>коллекции в каталоге</span></div>
+        <div class="stat"><b data-count="100" data-suffix="%">0</b><span>букетов собраны вручную</span></div>
+    </div>
+
+    <section class="split" id="order">
+        <div class="ph" id="arch"><img data-speed=".05" src="img/9.jpg" alt=""></div>
+        <div>
+            <div class="eyebrow" data-reveal>Как заказать</div>
+            <h2 data-reveal>Три шага до <em>улыбки</em></h2>
+            <ol class="steps">
+                <li data-reveal><b>Выберите букет</b><span>На сайте или в приложении — с фото и составом.</span></li>
+                <li data-reveal><b>Доставка или самовывоз</b><span>Укажите адрес или студию и удобное время.</span></li>
+                <li data-reveal><b>Получите</b><span>Мы позвоним, соберём и передадим свежим.</span></li>
+            </ol>
+        </div>
+    </section>
+</div>
+
+<section class="studios wrap" id="studios">
+    <div class="eyebrow" data-reveal>Адреса</div>
+    <div class="studios__grid">
+        <div class="studio" data-reveal><h3>Тореза, 42а/1</h3><p>Новокузнецк</p><span class="tag">Круглосуточно</span></div>
+        <div class="studio" data-reveal><h3>Советской Армии, 2а/2</h3><p>Новокузнецк</p><span class="tag">Круглосуточно</span></div>
+    </div>
+</section>
+
+<footer class="ftr">
+    <div class="wrap">
+        <div class="ftr__cta"><h2>Подарите<br><em>весну</em> сегодня</h2><a class="pill" href="#bouquets">Заказать букет →</a></div>
+        <div class="giant" id="giant"><span>КОЛИБРИ</span></div>
+        <div class="ftr__bottom"><span>© Колибри, студия цветов</span><span>Новокузнецк</span></div>
+    </div>
+</footer>
+
+<script>
+(function () {
+    var $ = function (s) { return document.querySelector(s); };
+    var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // photos that are not there yet keep the placeholder
+    $$('.ph img').forEach(function (img) {
+        img.addEventListener('error', function () { img.classList.add('missing'); });
+        if (img.complete && !img.naturalWidth) { img.classList.add('missing'); }
+    });
+
+    // loader -> hero lines rise
+    window.addEventListener('load', function () {
+        setTimeout(function () { $('#loader').classList.add('done'); document.body.classList.add('ready'); }, reduce ? 0 : 1500);
+    });
+
+    // split the about text into words for the scroll highlight
+    var rt = $('#reveal-text');
+    rt.innerHTML = rt.textContent.split(' ').map(function (w) { return '<span class="w">' + w + '</span>'; }).join(' ');
+    var words = $$('#reveal-text .w');
+
+    // reveal on enter
+    var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+            if (!e.isIntersecting) { return; }
+            e.target.classList.add('in');
+            if (e.target.id === 'stats') { count(); }
+            io.unobserve(e.target);
+        });
+    }, { threshold: .2 });
+    $$('[data-reveal], #arch, #giant, #stats').forEach(function (el) { io.observe(el); });
+
+    function count() {
+        $$('[data-count]').forEach(function (el) {
+            var to = +el.dataset.count, start = performance.now(), suffix = el.dataset.suffix || '';
+            (function tick(t) {
+                var p = Math.min(1, (t - start) / 1600);
+                el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))) + suffix;
+                if (p < 1) { requestAnimationFrame(tick); }
+            })(start);
+        });
+    }
+
+    // everything tied to scroll position
+    var hdr = $('#hdr'), track = $('#track'), hs = $('.hscroll'), bar = $('#hprogress'), mq = $('#marquee');
+    var lastY = 0, mqX = 0, velocity = 0;
+    function frame() {
+        var y = scrollY, vh = innerHeight;
+        hdr.classList.toggle('solid', y > 40);
+        hdr.classList.toggle('hide', y > lastY && y > 400);
+        velocity += (Math.abs(y - lastY) - velocity) * .1;
+        lastY = y;
+
+        // parallax photos
+        $$('[data-speed]').forEach(function (img) {
+            var r = img.parentNode.getBoundingClientRect();
+            img.style.transform = 'translateY(' + ((r.top + r.height / 2 - vh / 2) * +img.dataset.speed) + 'px)';
+        });
+
+        // words light up as the paragraph passes the middle of the screen
+        var rr = rt.getBoundingClientRect();
+        var p = Math.min(1, Math.max(0, (vh * .75 - rr.top) / (rr.height + vh * .25)));
+        var lit = Math.round(p * words.length);
+        words.forEach(function (w, i) { w.classList.toggle('on', i < lit); });
+
+        // vertical scroll -> horizontal gallery
+        var hr = hs.getBoundingClientRect();
+        var dist = track.scrollWidth - innerWidth + 48;
+        hs.style.height = (dist + vh) + 'px';
+        var hp = Math.min(1, Math.max(0, -hr.top / dist));
+        track.style.transform = 'translateX(' + (-hp * dist) + 'px)';
+        bar.style.transform = 'scaleX(' + hp + ')';
+
+        // marquee speeds up with scrolling
+        mqX -= .6 + velocity * .35;
+        var half = mq.scrollWidth / 2;
+        if (-mqX > half) { mqX += half; }
+        mq.style.transform = 'translateX(' + mqX + 'px)';
+
+        requestAnimationFrame(frame);
+    }
+    if (!reduce) { requestAnimationFrame(frame); }
+
+    // cursor
+    var cur = $('#cursor'), cx = 0, cy = 0, tx = 0, ty = 0;
+    addEventListener('mousemove', function (e) { tx = e.clientX; ty = e.clientY; });
+    (function move() { cx += (tx - cx) * .2; cy += (ty - cy) * .2; cur.style.transform = 'translate(' + cx + 'px,' + cy + 'px)'; requestAnimationFrame(move); })();
+    $$('a, .card, .studio').forEach(function (el) {
+        el.addEventListener('mouseenter', function () { cur.classList.add('big'); });
+        el.addEventListener('mouseleave', function () { cur.classList.remove('big'); });
+    });
+})();
+</script>
+</body>
+</html>

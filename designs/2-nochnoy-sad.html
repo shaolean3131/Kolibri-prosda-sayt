@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Колибри — Ночной сад (концепт 2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+:root {
+    --navy: #0a1f3a;
+    --deep: #06142a;
+    --cream: #fdf0a6;
+    --cream-2: #fff8d6;
+    --pink: #f4a6c6;
+    --lilac: #b79cf5;
+    --text: #e9eef7;
+    --muted: #8fa1bd;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--deep); color: var(--text); font: 400 16px/1.6 "Manrope", system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+.wrap { width: min(1240px, 100% - 40px); margin: 0 auto; }
+.display { font-family: "Unbounded", sans-serif; }
+
+.ph { position: relative; overflow: hidden; background: radial-gradient(100% 80% at 70% 20%, rgba(244, 166, 198, .45), transparent 60%), radial-gradient(90% 70% at 20% 90%, rgba(183, 156, 245, .4), transparent 60%), #12294a; }
+.ph::before { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23fdf0a6' stroke-width='.8' opacity='.45'%3E%3Cpath d='M50 62c-8 0-13-6-13-14V38l6 5 7-8 7 8 6-5v10c0 8-5 14-13 14zM50 62v24M50 76c-5-6-12-7-16-4M50 80c4-5 10-6 14-3'/%3E%3C/g%3E%3C/svg%3E") center / 40% no-repeat; }
+.ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ph img.missing { display: none; }
+
+/* stars & petals */
+canvas#sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+main, header, footer { position: relative; z-index: 1; }
+
+/* ---------- header ---------- */
+.hdr { position: fixed; top: 16px; left: 50%; z-index: 40; display: flex; align-items: center; gap: 28px; padding: 10px 10px 10px 24px; border: 1px solid rgba(253, 240, 166, .18); border-radius: 99px; background: rgba(6, 20, 42, .55); backdrop-filter: blur(16px); transform: translateX(-50%); }
+.hdr b { font: 800 15px "Unbounded"; letter-spacing: .12em; color: var(--cream); }
+.hdr nav { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+.hdr nav a:hover { color: var(--text); }
+.btn { position: relative; display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 99px; background: var(--cream); color: var(--navy); font-weight: 700; font-size: 14px; overflow: hidden; transition: transform .3s var(--ease), box-shadow .3s; }
+.btn:hover { box-shadow: 0 0 0 6px rgba(253, 240, 166, .15), 0 10px 40px rgba(253, 240, 166, .35); }
+.btn--ghost { background: transparent; color: var(--cream); border: 1px solid rgba(253, 240, 166, .4); }
+
+/* ---------- hero ---------- */
+.hero { position: relative; min-height: 100vh; display: grid; align-items: center; overflow: hidden; }
+.rays { position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg at 62% 50%, rgba(253, 240, 166, .05) 0 5deg, transparent 5deg 10deg); animation: spin 120s linear infinite; }
+.hero__glow { position: absolute; width: 60vw; height: 60vw; right: -10vw; top: 10vh; border-radius: 50%; background: radial-gradient(circle, rgba(183, 156, 245, .35), transparent 60%); filter: blur(30px); }
+.hero__text { position: relative; z-index: 2; max-width: 720px; }
+.badge { display: inline-block; padding: 8px 16px; border-radius: 12px; background: var(--cream); color: var(--navy); font-weight: 700; transform: rotate(-3deg); opacity: 0; animation: pop .8s var(--ease) .3s forwards; }
+.hero h1 { margin: 28px 0 24px; font: 800 clamp(40px, 6.4vw, 96px)/1.02 "Unbounded"; color: var(--cream); }
+.hero h1 .ch { display: inline-block; opacity: 0; transform: translateY(.6em) rotate(8deg); animation: char .9s var(--ease) forwards; }
+.hero p { max-width: 460px; color: var(--muted); opacity: 0; animation: fade 1s 1.2s forwards; }
+.hero__ctas { display: flex; gap: 14px; margin-top: 30px; opacity: 0; animation: fade 1s 1.4s forwards; }
+.hero__bird { position: absolute; right: 2vw; top: 50%; z-index: 1; width: min(52vw, 640px); color: var(--cream); transform: translateY(-50%); }
+.hero__bird path, .hero__bird circle { stroke-dasharray: 700; stroke-dashoffset: 700; animation: draw 2.4s var(--ease) .2s forwards; }
+.hero__bird .wing { transform-origin: 42% 52%; animation: draw 2.4s var(--ease) .6s forwards, flap 2.6s ease-in-out 2.8s infinite; }
+
+/* the bird that flies along the page while you scroll */
+.flyer { position: fixed; left: 0; top: 0; z-index: 30; width: 90px; color: var(--cream); pointer-events: none; opacity: 0; transition: opacity .5s; filter: drop-shadow(0 0 18px rgba(253, 240, 166, .5)); }
+.flyer.on { opacity: 1; }
+.flyer .wing { transform-origin: 42% 52%; animation: flap .35s ease-in-out infinite; }
+
+/* ---------- sections ---------- */
+section { padding: 140px 0; }
+.kicker { font: 600 12px "Unbounded"; letter-spacing: .3em; text-transform: uppercase; color: var(--pink); }
+h2 { margin: 16px 0 0; font: 800 clamp(34px, 5vw, 72px)/1.05 "Unbounded"; color: var(--cream-2); }
+
+/* collections: tilting glowing cards */
+.collections__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 60px; perspective: 1000px; }
+.coll { position: relative; border-radius: 28px; padding: 14px; background: linear-gradient(160deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .02)); border: 1px solid rgba(255, 255, 255, .08); transform-style: preserve-3d; transition: transform .2s; }
+.coll::after { content: ""; position: absolute; inset: -1px; border-radius: 28px; padding: 1px; background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(253, 240, 166, .9), transparent 60%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity .3s; }
+.coll:hover::after { opacity: 1; }
+.coll .ph { aspect-ratio: 3 / 4; border-radius: 18px; transform: translateZ(30px); }
+.coll h3 { margin: 16px 6px 2px; font: 600 18px "Unbounded"; transform: translateZ(40px); }
+.coll p { margin: 0 6px 6px; font-size: 14px; color: var(--muted); }
+
+/* circle reveal */
+.reveal-wrap { height: 220vh; position: relative; padding: 0; }
+.reveal-sticky { position: sticky; top: 0; height: 100vh; display: grid; place-items: center; overflow: hidden; }
+.reveal-sticky .ph { position: absolute; inset: 0; clip-path: circle(12% at 50% 50%); }
+.reveal-sticky .ph::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgba(6, 20, 42, .8)); }
+.reveal-sticky blockquote { position: relative; z-index: 2; margin: 0; max-width: 900px; padding: 0 20px; text-align: center; font: 600 clamp(26px, 3.6vw, 52px)/1.2 "Unbounded"; color: var(--cream-2); opacity: 0; }
+
+/* timeline */
+.timeline { position: relative; margin-top: 70px; padding-left: 60px; }
+.timeline__line { position: absolute; left: 18px; top: 0; bottom: 0; width: 2px; background: rgba(255, 255, 255, .1); }
+.timeline__line i { position: absolute; inset: 0; background: linear-gradient(var(--cream), var(--pink)); transform-origin: top; transform: scaleY(0); }
+.step { position: relative; padding: 0 0 70px; opacity: .25; transform: translateX(-20px); transition: opacity .6s, transform .6s var(--ease); }
+.step.on { opacity: 1; transform: none; }
+.step::before { content: ""; position: absolute; left: -49px; top: 10px; width: 16px; height: 16px; border-radius: 50%; background: var(--deep); border: 2px solid var(--cream); transition: background .4s, box-shadow .4s; }
+.step.on::before { background: var(--cream); box-shadow: 0 0 20px var(--cream); }
+.step h3 { margin: 0 0 6px; font: 600 26px "Unbounded"; }
+.step p { margin: 0; color: var(--muted); max-width: 520px; }
+
+/* reviews marquee */
+.reviews { overflow: hidden; }
+.rev-row { display: flex; gap: 20px; width: max-content; margin-top: 50px; animation: slide 40s linear infinite; }
+.rev-row:hover { animation-play-state: paused; }
+.rev { width: 340px; padding: 26px; border-radius: 24px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08); }
+.rev .stars { color: var(--cream); letter-spacing: 4px; }
+.rev p { margin: 12px 0 16px; }
+.rev small { color: var(--muted); }
+
+/* places */
+.places { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 50px; }
+.place { padding: 34px; border-radius: 28px; background: linear-gradient(140deg, #13305a, #0b1f3d); border: 1px solid rgba(253, 240, 166, .15); transition: transform .5s var(--ease), border-color .3s; }
+.place:hover { transform: translateY(-6px); border-color: rgba(253, 240, 166, .5); }
+.place h3 { margin: 0; font: 600 24px "Unbounded"; color: var(--cream-2); }
+.place p { margin: 8px 0 0; color: var(--muted); }
+.place .open { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; font-weight: 600; color: #8ff0b0; }
+.place .open::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.6s infinite; }
+
+/* app band */
+.app { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; padding: 60px; border-radius: 40px; background: var(--cream); color: var(--navy); overflow: hidden; }
+.app h2 { color: var(--navy); }
+.phone { justify-self: center; width: 240px; height: 480px; border-radius: 40px; background: var(--navy); padding: 12px; box-shadow: 0 40px 80px rgba(6, 20, 42, .35); transform: rotate(-8deg); }
+.phone .ph { width: 100%; height: 100%; border-radius: 30px; }
+
+footer { padding: 80px 0 40px; color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; border-top: 1px solid rgba(255, 255, 255, .08); padding-top: 30px; }
+
+[data-up] { opacity: 0; transform: translateY(50px); transition: opacity 1s var(--ease), transform 1s var(--ease); }
+[data-up].in { opacity: 1; transform: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes flap { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-10deg) scaleY(.9); } }
+@keyframes char { to { opacity: 1; transform: none; } }
+@keyframes fade { to { opacity: 1; } }
+@keyframes pop { from { opacity: 0; transform: scale(.6) rotate(-12deg); } to { opacity: 1; transform: rotate(-3deg); } }
+@keyframes slide { to { transform: translateX(-50%); } }
+@keyframes pulse { 50% { opacity: .3; } }
+
+@media (max-width: 900px) {
+    .hdr nav { display: none; }
+    .hero__bird { opacity: .25; width: 90vw; right: -20vw; }
+    .collections__grid { grid-template-columns: repeat(2, 1fr); }
+    .places, .app { grid-template-columns: 1fr; }
+    .app { padding: 36px 24px; }
+    section { padding: 100px 0; }
+}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+
+<header class="hdr">
+    <b>КОЛИБРИ</b>
+    <nav><a href="#collections">Коллекции</a><a href="#how">Как заказать</a><a href="#places">Студии</a></nav>
+    <a class="btn" href="#collections">Заказать</a>
+</header>
+
+<svg class="flyer" id="flyer" viewBox="0 0 520 440" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 18 124 98"/><path d="M122 96c24-24 66-16 72 22 6 48-26 88-14 136 12 46 58 76 110 94"/><circle cx="152" cy="112" r="9" fill="currentColor"/>
+    <g class="wing"><path d="M208 206c70-54 160-76 270-66M222 226c72-40 160-50 280-34M232 246c70-26 150-28 250-4M240 266c56-10 116-4 180 22"/></g>
+    <path d="M262 340l18 84M292 344l34 76M322 342l46 62"/>
+</svg>
+
+<main>
+    <section class="hero">
+        <div class="rays"></div>
+        <div class="hero__glow"></div>
+        <div class="wrap">
+            <div class="hero__text">
+                <span class="badge">Добро пожаловать!</span>
+                <h1 id="title">Цветы, что прилетают вовремя</h1>
+                <p>Студия цветов «Колибри» в Новокузнецке: монобукеты, авторские букеты и композиции. Доставка и самовывоз круглосуточно.</p>
+                <div class="hero__ctas"><a class="btn" href="#collections">Выбрать букет →</a><a class="btn btn--ghost" href="#places">Адреса студий</a></div>
+            </div>
+        </div>
+        <svg class="hero__bird" viewBox="0 0 520 440" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 18 124 98"/><path d="M122 96c24-24 66-16 72 22 6 48-26 88-14 136 12 46 58 76 110 94"/><circle cx="152" cy="112" r="9"/>
+            <g class="wing"><path d="M208 206c70-54 160-76 270-66"/><path d="M222 226c72-40 160-50 280-34"/><path d="M232 246c70-26 150-28 250-4"/><path d="M240 266c56-10 116-4 180 22"/></g>
+            <path d="M262 340l18 84M292 344l34 76M322 342l46 62"/><path d="M196 248l6 50M218 252l16 46M240 254l24 38"/>
+        </svg>
+    </section>
+
+    <section id="collections" class="wrap">
+        <div class="kicker" data-up>Коллекции</div>
+        <h2 data-up>Выберите настроение</h2>
+        <div class="collections__grid">
+            <a class="coll" data-up href="#"><div class="ph"><img src="img/4.jpg" alt=""></div><h3>Монобукеты</h3><p>Один сорт — много чувств</p></a>
+            <a class="coll" data-up href="#"><div class="ph"><img src="img/5.jpg" alt=""></div><h3>Авторские</h3><p>Собираем как картину</p></a>
+            <a class="coll" data-up href="#"><div class="ph"><img src="img/6.jpg" alt=""></div><h3>Композиции</h3><p>В коробках и корзинах</p></a>
+            <a class="coll" data-up href="#"><div class="ph"><img src="img/7.jpg" alt=""></div><h3>Открытки</h3><p>И милые сувениры</p></a>
+        </div>
+    </section>
+
+    <section class="reveal-wrap" id="reveal">
+        <div class="reveal-sticky">
+            <div class="ph" id="circle"><img src="img/1.jpg" alt=""></div>
+            <blockquote id="quote">«Каждый букет — маленькое письмо, написанное цветами»</blockquote>
+        </div>
+    </section>
+
+    <section id="how" class="wrap">
+        <div class="kicker" data-up>Как заказать</div>
+        <h2 data-up>Легко, как взмах крыла</h2>
+        <div class="timeline" id="timeline">
+            <div class="timeline__line"><i id="tline"></i></div>
+            <div class="step"><h3>Выберите букет</h3><p>Смотрите фото, состав и размер. Добавьте открытку — напишем ваши слова от руки.</p></div>
+            <div class="step"><h3>Доставка или самовывоз</h3><p>Курьер привезёт по адресу, или заберите сами в одной из студий — они работают круглосуточно.</p></div>
+            <div class="step"><h3>Ко времени</h3><p>Как можно скорее или предзаказ на точную дату и час.</p></div>
+            <div class="step"><h3>Радость получателя</h3><p>Свежие цветы, аккуратная упаковка и немного волшебства.</p></div>
+        </div>
+    </section>
+
+    <section class="reviews">
+        <div class="wrap"><div class="kicker" data-up>Отзывы</div><h2 data-up>Нам пишут</h2></div>
+        <div class="rev-row">
+            <div class="rev"><div class="stars">★★★★★</div><p>Здесь будут настоящие отзывы клиентов с 2ГИС.</p><small>Имя клиента</small></div>
+            <div class="rev"><div class="stars">★★★★★</div><p>Текст отзыва — пример оформления карточки.</p><small>Имя клиента</small></div>
+            <div class="rev"><div class="stars">★★★★★</div><p>Отзывы прокручиваются бесконечной лентой, при наведении останавливаются.</p><small>Имя клиента</small></div>
+            <div class="rev"><div class="stars">★★★★★</div><p>Здесь будут настоящие отзывы клиентов с 2ГИС.</p><small>Имя клиента</small></div>
+            <div class="rev"><div class="stars">★★★★★</div><p>Здесь будут настоящие отзывы клиентов с 2ГИС.</p><small>Имя клиента</small></div>
+            <div class="rev"><div class="stars">★★★★★</div><p>Текст отзыва — пример оформления карточки.</p><small>Имя клиента</small></div>
+            <div class="rev"><div class="stars">★★★★★</div><p>Отзывы прокручиваются бесконечной лентой, при наведении останавливаются.</p><small>Имя клиента</small></div>
+            <div class="rev"><div class="stars">★★★★★</div><p>Здесь будут настоящие отзывы клиентов с 2ГИС.</p><small>Имя клиента</small></div>
+        </div>
+    </section>
+
+    <section id="places" class="wrap">
+        <div class="kicker" data-up>Студии</div>
+        <h2 data-up>Прилетайте к нам</h2>
+        <div class="places">
+            <div class="place" data-up><h3>Тореза, 42а/1</h3><p>Новокузнецк</p><span class="open">Открыто круглосуточно</span></div>
+            <div class="place" data-up><h3>Советской Армии, 2а/2</h3><p>Новокузнецк</p><span class="open">Открыто круглосуточно</span></div>
+        </div>
+    </section>
+
+    <section class="wrap">
+        <div class="app" data-up>
+            <div><div class="kicker">Приложение</div><h2>Заказывай в приложении и экономь время</h2><p>Установите на экран телефона — бонусы, акции и промокоды всегда под рукой.</p><a class="btn" style="background:var(--navy);color:var(--cream)" href="#">Установить</a></div>
+            <div class="phone" id="phone"><div class="ph"><img src="img/2.jpg" alt=""></div></div>
+        </div>
+    </section>
+</main>
+
+<footer><div class="wrap"><span>© Колибри, студия цветов · Новокузнецк</span><span>Концепт 2 — «Ночной сад»</span></div></footer>
+
+<script>
+(function () {
+    var $ = function (s) { return document.querySelector(s); };
+    var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    $$('.ph img').forEach(function (img) {
+        img.addEventListener('error', function () { img.classList.add('missing'); });
+        if (img.complete && !img.naturalWidth) { img.classList.add('missing'); }
+    });
+
+    // headline letters drop in one by one
+    var t = $('#title'), i = 0;
+    t.innerHTML = t.textContent.split(' ').map(function (word) {
+        return '<span style="display:inline-block;white-space:nowrap">' + word.split('').map(function (c) {
+            return '<span class="ch" style="animation-delay:' + (0.4 + (i++) * 0.03) + 's">' + c + '</span>';
+        }).join('') + '</span>';
+    }).join(' ');
+
+    var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: .15 });
+    $$('[data-up]').forEach(function (el, n) { el.style.transitionDelay = (n % 4) * 0.08 + 's'; io.observe(el); });
+
+    // tilt + glow following the mouse
+    $$('.coll').forEach(function (card) {
+        card.addEventListener('mousemove', function (e) {
+            var r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+            card.style.transform = 'rotateY(' + (x - .5) * 14 + 'deg) rotateX(' + (.5 - y) * 14 + 'deg)';
+            card.style.setProperty('--mx', x * 100 + '%');
+            card.style.setProperty('--my', y * 100 + '%');
+        });
+        card.addEventListener('mouseleave', function () { card.style.transform = ''; });
+    });
+
+    // night sky: stars + falling petals
+    var cv = $('#sky'), ctx = cv.getContext('2d'), W, H, stars = [], petals = [];
+    function size() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+    size(); addEventListener('resize', size);
+    for (var s = 0; s < 120; s++) { stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + .2, p: Math.random() * 6 }); }
+    for (var k = 0; k < 18; k++) { petals.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, s: 4 + Math.random() * 6, v: .3 + Math.random() * .6, a: Math.random() * 6, c: ['#f4a6c6', '#b79cf5', '#fdf0a6'][k % 3] }); }
+
+    // the flying bird follows a wavy path through the page
+    var flyer = $('#flyer'), lastX = 0;
+    function frame(time) {
+        ctx.clearRect(0, 0, W, H);
+        stars.forEach(function (st) {
+            ctx.globalAlpha = .35 + Math.sin(time / 900 + st.p) * .3;
+            ctx.fillStyle = '#fff8d6';
+            ctx.beginPath(); ctx.arc(st.x * W, st.y * H, st.r, 0, 7); ctx.fill();
+        });
+        petals.forEach(function (p) {
+            p.y += p.v; p.a += .02; p.x += Math.sin(p.a) * .6;
+            if (p.y > H + 20) { p.y = -20; p.x = Math.random() * W; }
+            ctx.globalAlpha = .55; ctx.fillStyle = p.c;
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
+            ctx.beginPath(); ctx.ellipse(0, 0, p.s, p.s * .55, 0, 0, 7); ctx.fill(); ctx.restore();
+        });
+        ctx.globalAlpha = 1;
+
+        var max = document.documentElement.scrollHeight - innerHeight;
+        var prog = Math.min(1, scrollY / max);
+        flyer.classList.toggle('on', scrollY > innerHeight * .6 && prog < .97);
+        var x = (Math.sin(prog * Math.PI * 5) * .36 + .5) * (innerWidth - 90);
+        var y = innerHeight * (.25 + Math.sin(prog * Math.PI * 9) * .12);
+        var dir = x < lastX ? 1 : -1; lastX = x;
+        flyer.style.transform = 'translate(' + x + 'px,' + y + 'px) scaleX(' + dir + ')';
+
+        // circle grows to full screen, then the quote appears
+        var rv = $('#reveal').getBoundingClientRect();
+        var rp = Math.min(1, Math.max(0, -rv.top / (rv.height - innerHeight)));
+        $('#circle').style.clipPath = 'circle(' + (12 + rp * 90) + '% at 50% 50%)';
+        $('#quote').style.opacity = Math.max(0, (rp - .55) * 3);
+        $('#quote').style.transform = 'translateY(' + (1 - Math.min(1, rp * 1.3)) * 40 + 'px)';
+
+        // timeline fills and lights steps
+        var tl = $('#timeline').getBoundingClientRect();
+        var tp = Math.min(1, Math.max(0, (innerHeight * .6 - tl.top) / tl.height));
+        $('#tline').style.transform = 'scaleY(' + tp + ')';
+        $$('.step').forEach(function (st) { st.classList.toggle('on', st.getBoundingClientRect().top < innerHeight * .62); });
+
+        // phone straightens as it scrolls in
+        var ph = $('#phone').getBoundingClientRect();
+        var pp = Math.min(1, Math.max(0, (innerHeight - ph.top) / innerHeight));
+        $('#phone').style.transform = 'rotate(' + (-14 + pp * 14) + 'deg) translateY(' + (1 - pp) * 60 + 'px)';
+
+        requestAnimationFrame(frame);
+    }
+    if (!reduce) { requestAnimationFrame(frame); }
+})();
+</script>
+</body>
+</html>
