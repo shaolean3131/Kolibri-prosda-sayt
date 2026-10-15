@@ -169,6 +169,56 @@ img { display: block; max-width: 100%; }
     .cursor { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .line > span, .hero__aside, [data-reveal], .giant span { transform: none !important; opacity: 1 !important; } .hero__pics .ph, .split .ph { clip-path: none !important; } }
+:root{--m-bg:#1d1a17;--m-ink:#f6f1e9;--m-btn:transparent;--m-cta:#1d1a17;--m-cta-ink:#f6f1e9;--m-font:italic 400 46px/1.15 "Cormorant Garamond",serif;}
+/* ---------- mobile: menu, sticky order button, logo slot ---------- */
+.brand-logo { display: none; height: 38px; width: auto; }
+.has-logo .brand-logo { display: block; }
+.has-logo .brand-text { display: none !important; }
+.burger { display: none; position: relative; z-index: 61; width: 46px; height: 46px; border: 0; border-radius: 50%; background: var(--m-btn); cursor: pointer; }
+.burger i { position: absolute; left: 14px; right: 14px; height: 2px; border-radius: 2px; background: var(--m-ink); transition: transform .45s cubic-bezier(.2,.8,.2,1), top .45s cubic-bezier(.2,.8,.2,1); }
+.burger i:first-child { top: 18px; } .burger i:last-child { top: 26px; }
+.m-open .burger i:first-child { top: 22px; transform: rotate(45deg); }
+.m-open .burger i:last-child { top: 22px; transform: rotate(-45deg); }
+.mmenu { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 100px 28px 40px; background: var(--m-bg); color: var(--m-ink); clip-path: circle(0 at calc(100% - 44px) 44px); transition: clip-path .8s cubic-bezier(.7,0,.2,1); }
+.m-open .mmenu { clip-path: circle(150% at calc(100% - 44px) 44px); }
+.m-open { overflow: hidden; }
+.mmenu a { font: var(--m-font); opacity: 0; transform: translateY(30px); transition: opacity .5s, transform .6s cubic-bezier(.2,.8,.2,1); }
+.m-open .mmenu a { opacity: 1; transform: none; }
+.m-open .mmenu a:nth-child(2) { transition-delay: .06s; } .m-open .mmenu a:nth-child(3) { transition-delay: .12s; } .m-open .mmenu a:nth-child(4) { transition-delay: .18s; } .m-open .mmenu a:nth-child(5) { transition-delay: .24s; }
+.mmenu small { margin-top: 30px; opacity: .6; font-size: 14px; }
+.mcta { display: none; }
+.m-open .hdr { z-index: 70; }
+.burger i { background: var(--ink); }
+@media (max-width: 860px) {
+    .burger { display: block; }
+    .mcta { position: fixed; left: 16px; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 45; display: flex; align-items: center; justify-content: center; gap: 10px; height: 56px; border-radius: 99px; background: var(--m-cta); color: var(--m-cta-ink); font-weight: 700; font-size: 16px; box-shadow: 0 14px 34px rgba(0,0,0,.22); transform: translateY(140%); transition: transform .6s cubic-bezier(.34,1.4,.64,1); }
+    .mcta.show { transform: none; }
+    footer, .ftr { padding-bottom: 100px !important; }
+}
+
+@media (max-width: 860px) {
+    .hdr.solid { background: rgba(246, 241, 233, .96); }
+    .m-open .hdr { background: transparent; transform: none; }
+    .m-open .brand { color: var(--cream); position: relative; z-index: 61; }
+    .m-open .burger i { background: var(--cream); }
+    .hero { padding-top: 110px; min-height: auto; }
+    .hero h1 { font-size: clamp(52px, 15vw, 80px); }
+    .hero__pics { height: 62vh; margin-top: 40px; }
+    .marquee { margin-top: 70px; }
+    .about { padding: 110px 0 80px; }
+    .card { flex-basis: 74vw; }
+    .card__price { white-space: nowrap; }
+    .card__name { font-size: 23px; }
+    .hscroll__head { margin-bottom: 24px; }
+    .progress { width: 90px; }
+    .stats { margin-top: 90px; }
+    .stat { padding: 34px 6px 36px; }
+    .stat span { font-size: 12px; letter-spacing: 0; }
+    .studio { padding: 30px 24px; }
+    .studio h3 { font-size: 30px; }
+    .giant { margin-top: 70px; }
+    .ftr__bottom { flex-direction: column; gap: 6px; }
+}
 </style>
 </head>
 <body>
@@ -187,9 +237,9 @@ img { display: block; max-width: 100%; }
 
 <header class="hdr" id="hdr">
     <div class="wrap">
-        <a class="brand" href="#">КОЛИБРИ <small>студия цветов</small></a>
+        <a class="brand" href="#"><img class="brand-logo" src="img/logo.png" alt="Колибри"><span class="brand-text">КОЛИБРИ <small>студия цветов</small></span></a>
         <nav class="nav"><a href="#about">О студии</a><a href="#bouquets">Букеты</a><a href="#order">Как заказать</a><a href="#studios">Адреса</a></nav>
-        <a class="pill" href="#bouquets">Выбрать букет →</a>
+        <a class="pill" href="#bouquets">Выбрать букет →</a><button class="burger" type="button" aria-label="Меню"><i></i><i></i></button>
     </div>
 </header>
 
@@ -370,6 +420,25 @@ img { display: block; max-width: 100%; }
         el.addEventListener('mouseenter', function () { cur.classList.add('big'); });
         el.addEventListener('mouseleave', function () { cur.classList.remove('big'); });
     });
+})();
+</script>
+<div class="mmenu" aria-label="Меню"><a href="#about">О студии</a><a href="#bouquets">Букеты</a><a href="#order">Как заказать</a><a href="#studios">Адреса</a><small>Новокузнецк · круглосуточно</small></div><a class="mcta" href="#bouquets">Заказать букет →</a>
+<script>
+(function () {
+    // logo from img/logo.png when it exists
+    var logo = new Image();
+    logo.onload = function () { document.documentElement.classList.add('has-logo'); };
+    logo.src = 'img/logo.png';
+    // mobile menu
+    var root = document.documentElement;
+    document.querySelector('.burger').addEventListener('click', function () { root.classList.toggle('m-open'); });
+    document.querySelectorAll('.mmenu a').forEach(function (a) { a.addEventListener('click', function () { root.classList.remove('m-open'); }); });
+    // sticky order button after the first screen, hidden at the very end
+    var cta = document.querySelector('.mcta');
+    addEventListener('scroll', function () {
+        var end = scrollY + innerHeight > document.documentElement.scrollHeight - 400;
+        cta.classList.toggle('show', scrollY > innerHeight * .8 && !end);
+    }, { passive: true });
 })();
 </script>
 </body>

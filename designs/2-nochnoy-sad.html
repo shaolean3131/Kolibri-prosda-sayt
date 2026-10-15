@@ -142,15 +142,66 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
     .app { padding: 36px 24px; }
     section { padding: 100px 0; }
 }
+:root{--m-bg:#06142a;--m-ink:#fdf0a6;--m-btn:transparent;--m-cta:#fdf0a6;--m-cta-ink:#0a1f3a;--m-font:800 34px/1.25 "Unbounded",sans-serif;}
+/* ---------- mobile: menu, sticky order button, logo slot ---------- */
+.brand-logo { display: none; height: 38px; width: auto; }
+.has-logo .brand-logo { display: block; }
+.has-logo .brand-text { display: none !important; }
+.burger { display: none; position: relative; z-index: 61; width: 46px; height: 46px; border: 0; border-radius: 50%; background: var(--m-btn); cursor: pointer; }
+.burger i { position: absolute; left: 14px; right: 14px; height: 2px; border-radius: 2px; background: var(--m-ink); transition: transform .45s cubic-bezier(.2,.8,.2,1), top .45s cubic-bezier(.2,.8,.2,1); }
+.burger i:first-child { top: 18px; } .burger i:last-child { top: 26px; }
+.m-open .burger i:first-child { top: 22px; transform: rotate(45deg); }
+.m-open .burger i:last-child { top: 22px; transform: rotate(-45deg); }
+.mmenu { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 100px 28px 40px; background: var(--m-bg); color: var(--m-ink); clip-path: circle(0 at calc(100% - 44px) 44px); transition: clip-path .8s cubic-bezier(.7,0,.2,1); }
+.m-open .mmenu { clip-path: circle(150% at calc(100% - 44px) 44px); }
+.m-open { overflow: hidden; }
+.mmenu a { font: var(--m-font); opacity: 0; transform: translateY(30px); transition: opacity .5s, transform .6s cubic-bezier(.2,.8,.2,1); }
+.m-open .mmenu a { opacity: 1; transform: none; }
+.m-open .mmenu a:nth-child(2) { transition-delay: .06s; } .m-open .mmenu a:nth-child(3) { transition-delay: .12s; } .m-open .mmenu a:nth-child(4) { transition-delay: .18s; } .m-open .mmenu a:nth-child(5) { transition-delay: .24s; }
+.mmenu small { margin-top: 30px; opacity: .6; font-size: 14px; }
+.mcta { display: none; }
+.m-open .hdr { z-index: 70; }
+
+@media (max-width: 860px) {
+    .burger { display: block; }
+    .mcta { position: fixed; left: 16px; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 45; display: flex; align-items: center; justify-content: center; gap: 10px; height: 56px; border-radius: 99px; background: var(--m-cta); color: var(--m-cta-ink); font-weight: 700; font-size: 16px; box-shadow: 0 14px 34px rgba(0,0,0,.22); transform: translateY(140%); transition: transform .6s cubic-bezier(.34,1.4,.64,1); }
+    .mcta.show { transform: none; }
+    footer, .ftr { padding-bottom: 100px !important; }
+}
+
+.hdr .brand-logo { height: 30px; padding: 3px 8px; border-radius: 10px; background: var(--cream); box-sizing: content-box; }
+@media (max-width: 860px) {
+    .hdr { left: 16px; right: 16px; transform: none; justify-content: space-between; padding: 8px 8px 8px 20px; }
+    .hdr > .btn { display: none; }
+    .hero { align-items: start; padding-top: 0; }
+    .hero__bird { order: -1; position: relative; display: block; right: auto; top: auto; width: 58vw; margin: 104px auto 0; transform: none; opacity: 1; }
+    .hero .wrap { margin-top: -10px; }
+    .hero { display: flex; flex-direction: column; min-height: 100svh; padding-bottom: 60px; }
+    .hero h1 { margin-top: 20px; font-size: clamp(34px, 10vw, 48px); }
+    .hero__ctas { flex-direction: column; }
+    .hero__ctas .btn { justify-content: center; white-space: nowrap; }
+    .collections__grid { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 40px -20px 0; padding: 0 20px 10px; scrollbar-width: none; }
+    .collections__grid::-webkit-scrollbar { display: none; }
+    .coll { flex: 0 0 70vw; scroll-snap-align: center; }
+    .flyer { width: 54px; }
+    .reveal-sticky blockquote { font-size: 24px; }
+    .timeline { padding-left: 46px; }
+    .step::before { left: -35px; }
+    .timeline__line { left: 18px; }
+    .step h3 { font-size: 21px; }
+    .rev { width: 280px; }
+    .phone { width: 180px; height: 360px; margin-bottom: 10px; }
+    .app h2 { font-size: 28px; }
+}
 </style>
 </head>
 <body>
 <canvas id="sky"></canvas>
 
 <header class="hdr">
-    <b>КОЛИБРИ</b>
+    <b class="brand-text">КОЛИБРИ</b><img class="brand-logo" src="img/logo.png" alt="Колибри">
     <nav><a href="#collections">Коллекции</a><a href="#how">Как заказать</a><a href="#places">Студии</a></nav>
-    <a class="btn" href="#collections">Заказать</a>
+    <a class="btn" href="#collections">Заказать</a><button class="burger" type="button" aria-label="Меню"><i></i><i></i></button>
 </header>
 
 <svg class="flyer" id="flyer" viewBox="0 0 520 440" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
@@ -330,6 +381,25 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
         requestAnimationFrame(frame);
     }
     if (!reduce) { requestAnimationFrame(frame); }
+})();
+</script>
+<div class="mmenu" aria-label="Меню"><a href="#collections">Коллекции</a><a href="#how">Как заказать</a><a href="#places">Студии</a><small>Новокузнецк · круглосуточно</small></div><a class="mcta" href="#collections">Заказать букет →</a>
+<script>
+(function () {
+    // logo from img/logo.png when it exists
+    var logo = new Image();
+    logo.onload = function () { document.documentElement.classList.add('has-logo'); };
+    logo.src = 'img/logo.png';
+    // mobile menu
+    var root = document.documentElement;
+    document.querySelector('.burger').addEventListener('click', function () { root.classList.toggle('m-open'); });
+    document.querySelectorAll('.mmenu a').forEach(function (a) { a.addEventListener('click', function () { root.classList.remove('m-open'); }); });
+    // sticky order button after the first screen, hidden at the very end
+    var cta = document.querySelector('.mcta');
+    addEventListener('scroll', function () {
+        var end = scrollY + innerHeight > document.documentElement.scrollHeight - 400;
+        cta.classList.toggle('show', scrollY > innerHeight * .8 && !end);
+    }, { passive: true });
 })();
 </script>
 </body>

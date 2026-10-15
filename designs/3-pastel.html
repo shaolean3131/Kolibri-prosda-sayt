@@ -113,14 +113,65 @@ footer { padding: 30px 0 50px; font-size: 14px; opacity: .6; text-align: center;
     .hero__img { width: 56vw; height: 74vw; }
     .sticker { font-size: 13px; }
 }
+:root{--m-bg:#7b2fd0;--m-ink:#fff;--m-btn:#fff;--m-cta:#22182b;--m-cta-ink:#fff;--m-font:900 44px/1.1 "Onest",sans-serif;}
+/* ---------- mobile: menu, sticky order button, logo slot ---------- */
+.brand-logo { display: none; height: 38px; width: auto; }
+.has-logo .brand-logo { display: block; }
+.has-logo .brand-text { display: none !important; }
+.burger { display: none; position: relative; z-index: 61; width: 46px; height: 46px; border: 0; border-radius: 50%; background: var(--m-btn); cursor: pointer; }
+.burger i { position: absolute; left: 14px; right: 14px; height: 2px; border-radius: 2px; background: var(--m-ink); transition: transform .45s cubic-bezier(.2,.8,.2,1), top .45s cubic-bezier(.2,.8,.2,1); }
+.burger i:first-child { top: 18px; } .burger i:last-child { top: 26px; }
+.m-open .burger i:first-child { top: 22px; transform: rotate(45deg); }
+.m-open .burger i:last-child { top: 22px; transform: rotate(-45deg); }
+.mmenu { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 100px 28px 40px; background: var(--m-bg); color: var(--m-ink); clip-path: circle(0 at calc(100% - 44px) 44px); transition: clip-path .8s cubic-bezier(.7,0,.2,1); }
+.m-open .mmenu { clip-path: circle(150% at calc(100% - 44px) 44px); }
+.m-open { overflow: hidden; }
+.mmenu a { font: var(--m-font); opacity: 0; transform: translateY(30px); transition: opacity .5s, transform .6s cubic-bezier(.2,.8,.2,1); }
+.m-open .mmenu a { opacity: 1; transform: none; }
+.m-open .mmenu a:nth-child(2) { transition-delay: .06s; } .m-open .mmenu a:nth-child(3) { transition-delay: .12s; } .m-open .mmenu a:nth-child(4) { transition-delay: .18s; } .m-open .mmenu a:nth-child(5) { transition-delay: .24s; }
+.mmenu small { margin-top: 30px; opacity: .6; font-size: 14px; }
+.mcta { display: none; }
+.m-open .hdr { z-index: 70; }
+.burger i { background: var(--ink); } .m-open .burger i { background: var(--violet); }
+@media (max-width: 860px) {
+    .burger { display: block; }
+    .mcta { position: fixed; left: 16px; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 45; display: flex; align-items: center; justify-content: center; gap: 10px; height: 56px; border-radius: 99px; background: var(--m-cta); color: var(--m-cta-ink); font-weight: 700; font-size: 16px; box-shadow: 0 14px 34px rgba(0,0,0,.22); transform: translateY(140%); transition: transform .6s cubic-bezier(.34,1.4,.64,1); }
+    .mcta.show { transform: none; }
+    footer, .ftr { padding-bottom: 100px !important; }
+}
+
+@media (max-width: 860px) {
+    .hdr .btn { display: none; }
+    .hdr .wrap { padding: 6px 6px 6px 20px; }
+    .m-open .hdr .wrap { background: transparent; box-shadow: none; }
+    .m-open .logo { -webkit-text-fill-color: #fff; }
+    .hero__title h1 { font-size: clamp(58px, 17vw, 90px); }
+    .hero__title h1 .o { -webkit-text-stroke-width: 1.5px; }
+    .sticker.s1 { left: 6%; top: 17%; } .sticker.s2 { right: 6%; top: 26%; } .sticker.s3 { left: 8%; bottom: 14%; }
+    .bento { grid-auto-rows: 170px; gap: 12px; padding: 80px 0; }
+    .tile { border-radius: 26px; padding: 18px; }
+    .tile h3 { font-size: 20px; }
+    .big-num { font-size: 56px; }
+    .arrow { width: 38px; height: 38px; top: 14px; right: 14px; }
+    .stack__card { top: 88px; min-height: 0; gap: 18px; padding: 24px; border-radius: 30px; margin-bottom: 24px; }
+    .stack__num { font-size: 64px; }
+    .stack__card h3 { margin: 10px 0 8px; }
+    .stack__card p { font-size: 16px; margin: 0; }
+    .stack__card .ph { min-height: 200px; border-radius: 22px; }
+    .ribbon__row .ph { width: 170px; height: 210px; border-radius: 22px; }
+    .addr { padding: 70px 0; gap: 12px; }
+    .addr__card { padding: 28px; border-radius: 30px; }
+    .addr__card h3 { font-size: 28px; }
+    .final { padding: 90px 0; }
+}
 </style>
 </head>
 <body>
 
 <header class="hdr"><div class="wrap">
-    <span class="logo">КОЛИБРИ</span>
+    <span class="logo brand-text">КОЛИБРИ</span><img class="brand-logo" src="img/logo.png" alt="Колибри">
     <nav><a href="#bento">Букеты</a><a href="#stack">Почему мы</a><a href="#addr">Адреса</a></nav>
-    <a class="btn" data-magnet href="#bento">Заказать 🌷</a>
+    <a class="btn" data-magnet href="#bento">Заказать 🌷</a><button class="burger" type="button" aria-label="Меню"><i></i><i></i></button>
 </div></header>
 
 <section class="hero" id="hero">
@@ -239,6 +290,25 @@ footer { padding: 30px 0 50px; font-size: 14px; opacity: .6; text-align: center;
         requestAnimationFrame(frame);
     }
     if (!reduce) { requestAnimationFrame(frame); }
+})();
+</script>
+<div class="mmenu" aria-label="Меню"><a href="#bento">Букеты</a><a href="#stack">Почему мы</a><a href="#addr">Адреса</a><small>Новокузнецк · круглосуточно</small></div><a class="mcta" href="#bento">Заказать букет →</a>
+<script>
+(function () {
+    // logo from img/logo.png when it exists
+    var logo = new Image();
+    logo.onload = function () { document.documentElement.classList.add('has-logo'); };
+    logo.src = 'img/logo.png';
+    // mobile menu
+    var root = document.documentElement;
+    document.querySelector('.burger').addEventListener('click', function () { root.classList.toggle('m-open'); });
+    document.querySelectorAll('.mmenu a').forEach(function (a) { a.addEventListener('click', function () { root.classList.remove('m-open'); }); });
+    // sticky order button after the first screen, hidden at the very end
+    var cta = document.querySelector('.mcta');
+    addEventListener('scroll', function () {
+        var end = scrollY + innerHeight > document.documentElement.scrollHeight - 400;
+        cta.classList.toggle('show', scrollY > innerHeight * .8 && !end);
+    }, { passive: true });
 })();
 </script>
 </body>
