@@ -19,7 +19,7 @@ function client_filters(): array
         'check'      => ['title' => 'Средний чек',            'type' => 'range'],
         'discount'   => ['title' => 'Персональная скидка',    'type' => 'select', 'options' => ['yes' => 'Есть', 'no' => 'Нет']],
         'gender'     => ['title' => 'Пол',                    'type' => 'select', 'options' => ['m' => 'Мужской', 'f' => 'Женский', 'none' => 'Не указан']],
-        'platform'   => ['title' => 'Платформа',              'type' => 'select', 'options' => ['ios' => 'iOS', 'android' => 'Android', 'web' => 'Сайт']],
+        'platform'   => ['title' => 'Платформа',              'type' => 'select', 'options' => ['ios' => 'iOS', 'android' => 'Android', 'web' => 'Сайт', 'telegram' => 'Telegram']],
     ];
 }
 

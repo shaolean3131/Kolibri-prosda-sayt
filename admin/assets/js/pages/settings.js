@@ -147,6 +147,20 @@
     }
 
     var chatsBox = UI.$('[data-tg-chats]');
+    if (UI.$('[data-tg="connect"]')) {
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-tg="connect"]');
+            if (!btn) {
+                return;
+            }
+            UI.busy(btn, true);
+            UI.api('api/telegram.php', { action: 'connect' }).then(function (res) {
+                UI.toast(res.bot ? 'Готово! Откройте @' + res.bot + ' в Telegram' : 'Готово! Мини-приложение подключено');
+            }).catch(function () { /* toast shown */ }).then(function () {
+                UI.busy(btn, false);
+            });
+        });
+    }
     if (chatsBox) {
         var chatInput = document.querySelector('input[name="telegram_chat_ids"]');
 

@@ -14,6 +14,7 @@ sunucunuzda çalışan PHP sitesi ve yönetim paneli.
 | Admin: Каталог, Клиенты, Заказы, Акции и скидки | hazır |
 | Admin: Настройки (Главные, Формы оплаты, Предзаказы, Точки и зоны доставки, Время работы, Уведомления, Юр. информация, Сниппеты) | hazır |
 | Yeni sipariş → Telegram mesajı + panelde sesli bildirim | hazır |
+| Telegram Mini App (3 tasarım, müşteriye durum mesajları) | hazır |
 | Müşteri girişi (SMS), teslimat bölgesi çizimi, diğer menü bölümleri | sonra |
 
 ## Gereksinimler
@@ -50,6 +51,28 @@ location ~ ^/uploads/.*\.php$ { deny all; }
 Artık her yeni sipariş anında Telegram'a gelir. Sunucunun `api.telegram.org`
 adresine erişebilmesi gerekir (Rusya'daki bazı hostinglerde kapalı olabilir;
 o durumda hosting desteğine sorun).
+
+## Telegram Mini App (Telegram içinde mağaza)
+
+Müşteri botu açar, sol alttaki **«Заказать букет»** menü düğmesine basar ve
+mağaza Telegram'ın içinde açılır (`/tg/` sayfası). Katalog, fiyatlar ve
+siparişler sitedekiyle aynıdır; siparişler panelde «Источник: Telegram» olarak görünür.
+
+- 3 tasarım: **Ботаника**, **Ночной сад**, **Пастель** — Настройки → Еще →
+  **Telegram Mini App** → «Дизайн приложения». Tarayıcıda önizleme:
+  `/tg/?skin=botanika`, `/tg/?skin=nochnoy`, `/tg/?skin=pastel`.
+- Telegram'ın kendi alt düğmesi, geri tuşu, titreşimi; telefon numarası tek
+  dokunuşla («Из Telegram»); isim Telegram'dan gelir; sepet Telegram bulutunda
+  saklanır (müşteri başka cihazdan açsa da sepet durur).
+- Müşteriye bot üzerinden mesaj gider: sipariş alındı, принят, готов, в пути,
+  доставлен, отменён (panelde durum değiştirince otomatik).
+- «Мои заказы» ekranı: müşteri kendi siparişlerini ve durumlarını görür.
+
+Kurulum: önce yukarıdaki Telegram bildirimlerini kurun, site **https** ile
+açılıyor olsun, sonra Telegram Mini App sekmesinde **«Подключить к боту»**.
+Bu, botun menü düğmesini ve `/start` karşılama mesajını ayarlar
+(`api/telegram-webhook.php`). Not: webhook kurulunca «Найти чаты» bota yazan
+sohbetleri webhook'tan okur.
 
 ## Uygulama (ana ekrana ekle)
 

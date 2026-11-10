@@ -2,15 +2,16 @@
 /* Places an order from the storefront and notifies the shop in Telegram. */
 define('KOLIBRI_SITE', true);
 require dirname(__DIR__) . '/admin/core/bootstrap.php';
-require_once dirname(__DIR__) . '/admin/core/orders.php';
+require_once dirname(__DIR__) . '/admin/core/telegram_app.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrf_valid()) {
+if (!storefront_request_valid()) {
     json_response(['error' => 'Сессия устарела. Обновите страницу и попробуйте снова.'], 419);
 }
 
 $input = $_POST;
 $items = json_decode(is_string($_POST['items'] ?? null) ? $_POST['items'] : '[]', true);
 $input['items'] = is_array($items) ? array_slice($items, 0, 100) : [];
+$input['tg_user'] = ($input['source'] ?? '') === 'tg' ? tg_request_user() : null;
 if (($input['when'] ?? '') === 'later') {
     $input['scheduled_at'] = trim((string) ($_POST['date'] ?? '')) . ' ' . trim((string) ($_POST['time'] ?? ''));
 }
@@ -46,3 +47,4 @@ if (function_exists('fastcgi_finish_request')) {
 }
 ignore_user_abort(true);
 notify_new_order($id);
+tg_notify_order_placed($id);

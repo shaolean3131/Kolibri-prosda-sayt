@@ -2,7 +2,7 @@
 defined('KOLIBRI') or exit;
 
 /** Bump when the schema below changes; migrate() then runs once. */
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 function migrate_if_needed(PDO $pdo): void
 {
@@ -51,10 +51,12 @@ function schema_tables(): array
                 'platform'      => "VARCHAR(10) NOT NULL DEFAULT ''",
                 'points'        => 'INT NOT NULL DEFAULT 0',
                 'discount'      => 'INT NOT NULL DEFAULT 0',
+                'tg_id'         => "VARCHAR(20) NOT NULL DEFAULT ''",
+                'tg_username'   => "VARCHAR(64) NOT NULL DEFAULT ''",
                 'last_visit_at' => 'DATETIME NULL',
                 'created_at'    => 'DATETIME NOT NULL',
             ],
-            'indexes' => ['idx_clients_created' => 'created_at', 'idx_clients_phone' => 'phone'],
+            'indexes' => ['idx_clients_created' => 'created_at', 'idx_clients_phone' => 'phone', 'idx_clients_tg' => 'tg_id'],
         ],
         'pickup_points' => [
             'columns' => [
@@ -92,6 +94,7 @@ function schema_tables(): array
                 'promo_code'      => "VARCHAR(40) NOT NULL DEFAULT ''",
                 'promotion_id'    => '{fk} NULL',
                 'source'          => "VARCHAR(10) NOT NULL DEFAULT 'site'",
+                'tg_chat_id'      => "VARCHAR(20) NOT NULL DEFAULT ''",
                 'status'          => "VARCHAR(20) NOT NULL DEFAULT 'new'",
                 'cancel_reason'   => "VARCHAR(120) NOT NULL DEFAULT ''",
                 'ip'              => "VARCHAR(45) NOT NULL DEFAULT ''",
@@ -99,7 +102,7 @@ function schema_tables(): array
                 'updated_at'      => 'DATETIME NULL',
             ],
             'constraints' => ['FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL'],
-            'indexes'     => ['idx_orders_created' => 'created_at', 'idx_orders_status' => 'status', 'idx_orders_client' => 'client_id', 'idx_orders_phone' => 'phone'],
+            'indexes'     => ['idx_orders_created' => 'created_at', 'idx_orders_status' => 'status', 'idx_orders_client' => 'client_id', 'idx_orders_phone' => 'phone', 'idx_orders_tg' => 'tg_chat_id'],
         ],
         'order_items' => [
             'columns' => [

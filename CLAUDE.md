@@ -58,6 +58,10 @@ admin/tools/seed-demo.php  Sadece CLI: deneme verisi (canlı veritabanında ÇAL
 config/config.sample.php   config.php olarak kopyalanır (git'e girmez). Varsayılan SQLite.
 storage/  SQLite veritabanı;  uploads/  yüklenen fotoğraflar (script çalıştırma kapalı)
 designs/  3 animasyonlu tasarım konsepti (aşağıya bak)
+site/data.php        Vitrin verisi (ürünler, ayarlar, banner) — index.php ve tg/ ortak kullanır
+tg/                  Telegram Mini App: index.php + app.css (3 skin) + app.js
+admin/core/telegram_app.php  initData doğrulama, müşteriye bot mesajları, webhook işleyici
+api/tg-orders.php, api/telegram-webhook.php   «Мои заказы» ve bot webhook'u
 ```
 
 Önemli kurallar / tuzaklar:
@@ -71,6 +75,12 @@ designs/  3 animasyonlu tasarım konsepti (aşağıya bak)
   telefon başına 5 / IP başına 20 sipariş / 10 dk sınırı.
 - Vitrin fiyat biçimi binlik ayraçsız: `2500 ₽` (orijinal site böyle). Panel bazı yerlerde ayraçlı.
 - Arayüz metinleri Rusça; kod yorumları İngilizce ve az.
+- Telegram Mini App: Telegram Web uygulamayı cross-site iframe'de açar → oturum çerezi gitmez.
+  Bu yüzden vitrin API'leri `storefront_request_valid()` = CSRF **veya** imzalı initData
+  (`X-Tg-Init-Data` başlığı / `tg_init` alanı) kabul eder. `tg/index.php` X-Frame-Options'ı kaldırıp
+  `frame-ancestors` ile sadece telegram.org'a izin verir.
+- Sipariş kaynağı: `orders.source` = site | app | tg (`ORDER_SOURCES`). Fiyat/görünürlük için
+  tg, app gibi davranır. Telegram müşterisi `orders.tg_chat_id` ve `clients.tg_id` ile bağlanır.
 
 ## Yapılanlar (özet)
 
@@ -96,6 +106,14 @@ designs/  3 animasyonlu tasarım konsepti (aşağıya bak)
    - Fotoğraf yuvaları: `designs/img/1.jpg … 10.jpg` (yoksa yumuşak yer tutucu görünür).
      Numaraların anlamı `designs/img/README.txt` içinde.
 
+6. **Telegram Mini App** (`tg/`) — kullanıcının isteği: «siteyi Telegram ile senkronize et, 3 tasarım
+   konseptiyle». Her konseptin Mini App versiyonu var (Ботаника / Ночной сад / Пастель), panelden
+   seçiliyor (Настройки → Еще → Telegram Mini App). Telegram MainButton/BackButton/Haptic/CloudStorage/
+   requestContact kullanır; tarayıcıda açılınca sayfa içi düğme ve geniş ekranda telefon çerçevesi
+   gösterir. Panelde durum değişince müşteriye bot mesajı gider (`tg_notify_status`).
+   «Подключить к боту» = setWebhook + setChatMenuButton (https şart). Test: sahte Telegram nesnesiyle
+   Playwright + imzalı initData ile curl; **gerçek Telegram'da henüz denenmedi** (bulutta Telegram'a erişim yok).
+
 ## Sıradaki işler (kullanıcının son isteği)
 
 1. **Kullanıcının yerel klasöründeki fotoğrafları ve logoyu tasarımlara yerleştir:**
@@ -106,7 +124,9 @@ designs/  3 animasyonlu tasarım konsepti (aşağıya bak)
 2. Kullanıcı 3 konseptten birini (veya karışımını) seçince, onu **gerçek vitrine** dönüştür:
    mevcut katalog / sepet / sipariş / PWA mantığını (`index.php`, `assets/site.js`) koruyarak.
 3. Tasarımlarda örnek olan rakam/yorumları gerçek bilgilerle değiştir (2GIS yorumları vb.).
-4. Daha sonra: Стоп-листы, Отзывы, Пуш-рассылка (PWA web push önerildi),
+4. Telegram Mini App'i gerçek bot ve https sunucuda dene (iPhone + Android + Telegram Desktop/Web).
+   Ürün fotoğrafları yüklenince Mini App kartları da onları gösterir.
+5. Daha sonra: Стоп-листы, Отзывы, Пуш-рассылка (PWA web push önerildi),
    Программа лояльности, müşteri SMS girişi, Yandex API anahtarıyla teslimat bölgesi çizimi.
 
 ## Yerelde çalıştırma (Windows)

@@ -21,6 +21,8 @@ const PAYMENT_METHODS = [
     'transfer' => 'Переводом (СБП)',
 ];
 
+const ORDER_SOURCES = ['site' => 'Сайт', 'app' => 'Приложение', 'tg' => 'Telegram'];
+
 const CANCEL_REASONS = ['Клиент отказался', 'Нет в наличии', 'Не удалось связаться', 'Дубль заказа', 'Другое'];
 
 const READY_IN_OPTIONS = [20, 30, 45, 60, 90, 120];
@@ -152,7 +154,7 @@ function storefront_catalog(string $source = 'site'): array
  */
 function price_cart(array $items, array $context): array
 {
-    $source = ($context['source'] ?? 'site') === 'app' ? 'app' : 'site';
+    $source = in_array($context['source'] ?? 'site', ['app', 'tg'], true) ? 'app' : 'site';
     $available = [];
     foreach (storefront_catalog($source) as $category) {
         foreach ($category['products'] as $product) {
@@ -475,7 +477,11 @@ function place_order(array $in, string $ip): int
     }
 
     $items = is_array($in['items'] ?? null) ? $in['items'] : [];
-    $source = ($in['source'] ?? '') === 'app' ? 'app' : 'site';
+    $source = is_string($in['source'] ?? null) && isset(ORDER_SOURCES[$in['source']]) ? $in['source'] : 'site';
+    $tgUser = is_array($in['tg_user'] ?? null) ? $in['tg_user'] : null;
+    if ($source === 'tg' && $tgUser === null) {
+        $source = 'app';
+    }
     $priced = price_cart($items, ['delivery_type' => $type, 'promo_code' => $str('promo_code', 40), 'phone' => $phone, 'source' => $source]);
     if (!$priced['lines'] || $priced['count'] === 0) {
         throw new UserError('Корзина пуста.');
@@ -491,6 +497,9 @@ function place_order(array $in, string $ip): int
     $pdo->beginTransaction();
     try {
         $clientId = remember_client($name, $phone, $source);
+        if ($tgUser !== null) {
+            tg_link_client($clientId, $tgUser);
+        }
         $stamp = $now->format('Y-m-d H:i:s');
         $order = [
             'client_id'       => $clientId,
@@ -514,6 +523,7 @@ function place_order(array $in, string $ip): int
             'promo_code'      => $priced['promo']['code'] ?? '',
             'promotion_id'    => $priced['promo']['id'] ?? null,
             'source'          => $source,
+            'tg_chat_id'      => $tgUser['id'] ?? '',
             'status'          => 'new',
             'ip'              => $ip,
             'created_at'      => $stamp,
@@ -557,7 +567,7 @@ function remember_client(string $name, string $phone, string $source): int
         return (int) $client['id'];
     }
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $platform = $source === 'app' ? (preg_match('/iPhone|iPad|iPod/i', $ua) ? 'ios' : (stripos($ua, 'Android') !== false ? 'android' : 'web')) : 'web';
+    $platform = $source === 'tg' ? 'telegram' : ($source === 'app' ? (preg_match('/iPhone|iPad|iPod/i', $ua) ? 'ios' : (stripos($ua, 'Android') !== false ? 'android' : 'web')) : 'web');
     db()->prepare('INSERT INTO clients (name, phone, platform, last_visit_at, created_at) VALUES (?, ?, ?, ?, ?)')
         ->execute([$name, $phone, $platform, $now, $now]);
     return (int) db()->lastInsertId();
@@ -656,7 +666,7 @@ function order_telegram_text(array $order, string $adminUrl = ''): string
 {
     $h = static fn ($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
     $lines = [];
-    $lines[] = '🌸 <b>Новый заказ #' . $order['id'] . '</b>' . ($order['source'] === 'app' ? ' (приложение)' : '');
+    $lines[] = '🌸 <b>Новый заказ #' . $order['id'] . '</b>' . ($order['source'] !== 'site' ? ' (' . mb_strtolower(ORDER_SOURCES[$order['source']] ?? $order['source']) . ')' : '');
     $lines[] = ($order['delivery_type'] === 'pickup' ? '🏪 ' : '🚗 ') . $h(order_place_label($order));
     $lines[] = '🕒 ' . $h(order_time_label($order));
     $lines[] = '';
@@ -709,7 +719,7 @@ function order_filters(): array
         'date'    => ['title' => 'Дата заказа', 'type' => 'date'],
         'total'   => ['title' => 'Итого', 'type' => 'range'],
         'promo'   => ['title' => 'Акция', 'type' => 'select', 'options' => $promos],
-        'source'  => ['title' => 'Источник', 'type' => 'select', 'options' => ['site' => 'Сайт', 'app' => 'Приложение']],
+        'source'  => ['title' => 'Источник', 'type' => 'select', 'options' => ORDER_SOURCES],
         'type'    => ['title' => 'Тип доставки', 'type' => 'select', 'options' => ['delivery' => 'Доставка', 'pickup' => 'Самовывоз']],
         'point'   => ['title' => 'Пункт самовывоза', 'type' => 'select', 'options' => $points],
         'payment' => ['title' => 'Метод оплаты', 'type' => 'select', 'options' => PAYMENT_METHODS],
@@ -769,7 +779,7 @@ function order_payload(array $order): array
         'time'       => order_time_label($order),
         'payment'    => (PAYMENT_METHODS[$order['payment_method']] ?? $order['payment_method']) . ($order['change_from'] !== '' ? ', сдача с ' . $order['change_from'] . ' ₽' : ''),
         'comment'    => (string) $order['comment'],
-        'source'     => $order['source'] === 'app' ? 'Приложение' : 'Сайт',
+        'source'     => ORDER_SOURCES[$order['source']] ?? 'Сайт',
         'promo'      => $order['promo_code'],
         'items'      => array_map(static fn ($i) => [
             'name'  => $i['name'],

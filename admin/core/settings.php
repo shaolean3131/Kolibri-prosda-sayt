@@ -4,6 +4,13 @@ defined('KOLIBRI') or exit;
 /** Tabs shown directly; the rest go under "Еще". */
 const SETTINGS_MAIN_TABS = ['main', 'payment', 'preorders', 'delivery'];
 
+/** Mirrors TG_SKINS in telegram_app.php (kept here so settings load without it). */
+const TG_SKINS_LABELS = [
+    'botanika' => 'Ботаника',
+    'nochnoy'  => 'Ночной сад',
+    'pastel'   => 'Пастель',
+];
+
 const WEEKDAYS_FULL = [1 => 'Понедельник', 2 => 'Вторник', 3 => 'Среда', 4 => 'Четверг', 5 => 'Пятница', 6 => 'Суббота', 7 => 'Воскресенье'];
 
 /**
@@ -82,6 +89,21 @@ function settings_tabs(): array
             ['type' => 'text', 'name' => 'telegram_chat_ids', 'label' => 'ID чатов',
              'hint' => 'Кому отправлять заказы, через запятую. Проще всего — кнопка «Найти чаты».'],
             ['type' => 'telegram'],
+        ]],
+        'tgapp' => ['title' => 'Telegram Mini App', 'fields' => [
+            ['type' => 'notice', 'text' => 'Магазин внутри Telegram: клиент открывает бота, нажимает кнопку меню и заказывает, не выходя из чата. Каталог, цены и заказы — общие с сайтом.'],
+            ['type' => 'select', 'name' => 'tg_skin', 'default' => 'nochnoy', 'label' => 'Дизайн приложения',
+             'hint' => 'Ботаника — кремовый, редакционный; Ночной сад — тёмно-синий с колибри; Пастель — розовый, бенто-карточки.', 'options' => TG_SKINS_LABELS],
+            ['type' => 'text', 'name' => 'tg_menu_text', 'default' => 'Заказать букет', 'label' => 'Текст кнопки меню',
+             'hint' => 'Кнопка слева от поля ввода в чате с ботом (до 30 символов).'],
+            ['type' => 'text', 'name' => 'tg_site_url', 'label' => 'Адрес сайта',
+             'hint' => 'Например: https://kolibri-flowers.ru — нужен https. Пусто — адрес, с которого открыта панель.'],
+            ['type' => 'switch', 'name' => 'tg_notify_status', 'default' => '1', 'label' => 'Сообщать клиенту статус заказа',
+             'hint' => 'Бот напишет клиенту, когда заказ принят, готов, в пути, доставлен или отменён.'],
+            ['type' => 'textarea', 'name' => 'tg_welcome', 'title' => 'Приветствие на /start',
+             'placeholder' => "Здравствуйте! 🌸\nЭто «Колибри — студия цветов»…",
+             'hint' => 'Бот отправит это сообщение с кнопкой «Заказать букет», когда клиент впервые откроет чат.'],
+            ['type' => 'tg_app'],
         ]],
         'legal' => ['title' => 'Юридическая информация', 'fields' => [
             ['type' => 'text', 'name' => 'legal_name', 'label' => 'Название организации или ИП'],

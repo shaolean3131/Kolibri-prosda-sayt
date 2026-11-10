@@ -1,6 +1,7 @@
 <?php
 require dirname(__DIR__) . '/core/bootstrap.php';
 require_once dirname(__DIR__) . '/core/orders.php';
+require_once dirname(__DIR__) . '/core/telegram_app.php';
 
 $action = is_string($_GET['action'] ?? null) ? $_GET['action'] : '';
 
@@ -48,7 +49,7 @@ if ($action === 'export') {
             ORDER_STATUSES[$o['status']]['label'] ?? $o['status'],
             $o['cancel_reason'],
             $o['comment'],
-            $o['source'] === 'app' ? 'Приложение' : 'Сайт',
+            ORDER_SOURCES[$o['source']] ?? 'Сайт',
         ], ';', '"', '');
     }
     exit;
@@ -79,6 +80,7 @@ switch (input_string('action', 20)) {
             ->execute([$status, $reason, date('Y-m-d H:i:s'), $id]);
         $order['status'] = $status;
         $order['cancel_reason'] = $reason;
+        tg_notify_status($order);
         json_response(['ok' => true, 'order' => order_payload($order)]);
 }
 

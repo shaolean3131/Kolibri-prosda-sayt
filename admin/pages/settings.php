@@ -1,7 +1,7 @@
 <?php
 defined('KOLIBRI') or exit;
 
-require_once ADMIN_DIR . '/core/orders.php';
+require_once ADMIN_DIR . '/core/telegram_app.php';
 
 $tabs   = settings_tabs();
 $active = is_string($_GET['tab'] ?? null) && isset($tabs[$_GET['tab']]) ? $_GET['tab'] : 'main';
@@ -130,6 +130,31 @@ $renderInput = static function (array $field, string $current): string {
                         <li>Скопируйте токен, который пришлёт BotFather, в поле «Токен бота».</li>
                         <li>Напишите своему боту <code>/start</code> (или добавьте его в рабочую группу).</li>
                         <li>Нажмите «Найти чаты» и выберите чат — заказы начнут приходить туда.</li>
+                    </ol>
+                </div>
+            </div>
+
+        <?php elseif ($field['type'] === 'tg_app'):
+            $bot = (string) setting('tg_bot_username', ''); ?>
+            <div class="set-block">
+                <div class="tg">
+                    <div class="tg-skins">
+                        <?php foreach (TG_SKINS as $key => $label): ?>
+                            <a class="tg-skin tg-skin--<?= $key ?>" href="../tg/?skin=<?= $key ?>" target="_blank" rel="noopener">
+                                <span class="tg-skin__phone"><i></i><i></i><i></i></span>
+                                <b><?= e($label) ?></b><small>Открыть превью</small>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="tg__actions">
+                        <button class="btn btn--primary btn--sm" type="button" data-tg="connect">Подключить к боту</button>
+                        <?php if ($bot !== ''): ?><a class="btn btn--light btn--sm" href="https://t.me/<?= e($bot) ?>" target="_blank" rel="noopener">Открыть @<?= e($bot) ?></a><?php endif; ?>
+                    </div>
+                    <ol class="tg__help">
+                        <li>Сначала настройте бота во вкладке «Уведомления» (токен из @BotFather).</li>
+                        <li>Сайт должен открываться по <b>https</b> — без этого Telegram не покажет приложение.</li>
+                        <li>Нажмите «Подключить к боту»: у бота появится кнопка меню «<?= e(setting('tg_menu_text', '') ?: 'Заказать букет') ?>», а на /start — приветствие с кнопкой.</li>
+                        <li>Заказы из Telegram попадают в общий список «Заказы» с источником «Telegram».</li>
                     </ol>
                 </div>
             </div>

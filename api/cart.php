@@ -2,9 +2,9 @@
 /* Prices the cart on the server (promo codes, delivery, limits). */
 define('KOLIBRI_SITE', true);
 require dirname(__DIR__) . '/admin/core/bootstrap.php';
-require_once dirname(__DIR__) . '/admin/core/orders.php';
+require_once dirname(__DIR__) . '/admin/core/telegram_app.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrf_valid()) {
+if (!storefront_request_valid()) {
     json_response(['error' => 'Обновите страницу и попробуйте снова.'], 419);
 }
 
