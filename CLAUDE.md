@@ -129,6 +129,8 @@ api/tg-orders.php, api/telegram-webhook.php   «Мои заказы» ve bot web
 5. Daha sonra: Стоп-листы, Отзывы, Пуш-рассылка (PWA web push önerildi),
    Программа лояльности, müşteri SMS girişi, Yandex API anahtarıyla teslimat bölgesi çizimi.
 
+Canlıya kurulum rehberi (kullanıcı için, Türkçe): `KURULUM.md`.
+
 ## Yerelde çalıştırma (Windows)
 
 ```bash

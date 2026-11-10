@@ -24,6 +24,8 @@ sunucunuzda çalışan PHP sitesi ve yönetim paneli.
 
 ## Kurulum
 
+Adım adım, teknik olmayan anlatım: **[KURULUM.md](KURULUM.md)**.
+
 1. Dosyaları hosting'e yükleyin.
 2. `config/config.sample.php` dosyasını `config/config.php` adıyla kopyalayın
    ve gerekiyorsa MySQL bilgilerini girin. Hiçbir şey değiştirmezseniz
